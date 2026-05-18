@@ -5,14 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MOBILARIO AR QR VIEW by MMC</title>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=SF+Pro+Display:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-family:'Inter','SF Pro Display',-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
   background:#fafafa;
   min-height:100vh;
   color:#1d1d1f;
   overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-feature-settings:"cv02","cv03","cv04","cv11";
 }
 
 body::before{
@@ -52,19 +58,21 @@ body::before{
 }
 
 h1{
-  font-size:36px;
+  font-size:38px;
   font-weight:800;
-  letter-spacing:-1.5px;
+  letter-spacing:-1.8px;
   color:#1d1d1f;
-  margin-bottom:6px;
+  margin-bottom:8px;
+  font-family:'Inter',sans-serif;
 }
 
 .sub{
-  font-size:13px;
+  font-size:11px;
   color:#86868b;
-  letter-spacing:2px;
+  letter-spacing:3px;
   text-transform:uppercase;
-  font-weight:500;
+  font-weight:600;
+  font-family:'Inter',sans-serif;
 }
 
 .content{
@@ -76,11 +84,12 @@ h1{
 }
 
 h2{
-  font-size:32px;
+  font-size:36px;
   font-weight:800;
   margin-bottom:32px;
   color:#1d1d1f;
-  letter-spacing:-1px;
+  letter-spacing:-1.5px;
+  font-family:'Inter',sans-serif;
 }
 
 .card{
@@ -104,17 +113,20 @@ h2{
 }
 
 .card h3{
-  font-size:24px;
+  font-size:26px;
   font-weight:700;
-  margin-bottom:6px;
+  margin-bottom:8px;
   color:#1d1d1f;
-  letter-spacing:-.5px;
+  letter-spacing:-.8px;
+  font-family:'Inter',sans-serif;
 }
 
 .card p{
-  font-size:14px;
+  font-size:15px;
   color:#86868b;
   margin-bottom:20px;
+  font-weight:400;
+  line-height:1.5;
 }
 
 .viewer-wrapper{
@@ -232,18 +244,21 @@ model-viewer:not(.show-cotas) [slot^="hotspot"]{
 .dim label{
   font-size:10px;
   color:#86868b;
-  font-weight:700;
+  font-weight:600;
   text-transform:uppercase;
-  letter-spacing:1px;
+  letter-spacing:1.5px;
   display:block;
-  margin-bottom:6px;
+  margin-bottom:8px;
+  font-family:'Inter',sans-serif;
 }
 
 .dim span{
-  font-size:24px;
+  font-size:26px;
   font-weight:800;
   color:#ff8c3c;
-  letter-spacing:-.5px;
+  letter-spacing:-1px;
+  font-family:'Inter',sans-serif;
+  font-variant-numeric:tabular-nums;
 }
 
 .ar-btn{
@@ -259,12 +274,14 @@ model-viewer:not(.show-cotas) [slot^="hotspot"]{
   color:#ff8c3c;
   border:1px solid rgba(255,140,60,.25);
   border-radius:14px;
-  font-size:15px;
+  font-size:14px;
   font-weight:700;
   cursor:pointer;
   text-transform:uppercase;
+  letter-spacing:1.5px;
   transition:all .3s cubic-bezier(.16,1,.3,1);
   box-shadow:0 1px 2px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.8);
+  font-family:'Inter',sans-serif;
 }
 
 .ar-btn:hover{
@@ -278,16 +295,17 @@ model-viewer:not(.show-cotas) [slot^="hotspot"]{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  font-size:11px;
+  font-size:10px;
   background:rgba(255,140,60,.1);
-  padding:6px 14px;
+  padding:7px 14px;
   border-radius:20px;
   color:#ff7a1f;
   font-weight:700;
-  margin-bottom:12px;
-  letter-spacing:1px;
+  margin-bottom:14px;
+  letter-spacing:1.5px;
   border:1px solid rgba(255,140,60,.2);
   text-transform:uppercase;
+  font-family:'Inter',sans-serif;
 }
 
 .badge::before{
