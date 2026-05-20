@@ -1226,7 +1226,7 @@
     if (item.specs) Object.entries(item.specs).forEach(([k, v]) => bannerParams.set(k, v));
 
     const bannerUrl = `${bannerBase}?${bannerParams.toString()}`;
-    const finalIosSrc = `${baseIosSrc}#custom=${encodeURIComponent(bannerUrl)}&customHeight=400`;
+    const finalIosSrc = `${baseIosSrc}#custom=${encodeURIComponent(bannerUrl)}&customHeight=large`;
     viewer.setAttribute('ios-src', finalIosSrc);
   }
 
@@ -1283,7 +1283,7 @@
 
     buildHotspots(item);
     const showCotas = viewer.classList.contains('show-cotas');
-    viewer.src = (showCotas && item.srcCotas) ? item.srcCotas : item.src;
+    viewer.setAttribute('src', (showCotas && item.srcCotas) ? item.srcCotas : item.src);
     updateIosSrcAttribute(item, showCotas);
     document.querySelectorAll('.thumb-item').forEach(el => el.classList.toggle('active', el.dataset.id === id));
   }
@@ -1295,7 +1295,23 @@
     if (currentActiveId) {
       const item = catalog.find(x => x.id === currentActiveId);
       if (item) {
-        viewer.src = (active && item.srcCotas) ? item.srcCotas : item.src;
+        const newSrc = (active && item.srcCotas) ? item.srcCotas : item.src;
+        
+        if (viewer.getAttribute('src') !== newSrc) {
+          // Efecto de transición fluida (Glass blur crossfade)
+          viewer.style.transition = 'opacity 0.3s ease, filter 0.3s ease';
+          viewer.style.opacity = '0.3';
+          viewer.style.filter = 'blur(10px)';
+          
+          const onSwapLoad = () => {
+             viewer.style.opacity = '1';
+             viewer.style.filter = 'blur(0)';
+             viewer.removeEventListener('load', onSwapLoad);
+          };
+          viewer.addEventListener('load', onSwapLoad);
+          
+          viewer.setAttribute('src', newSrc);
+        }
         updateIosSrcAttribute(item, active);
       }
     }

@@ -32,9 +32,10 @@
     background: var(--bg);
     backdrop-filter: blur(20px) saturate(190%);
     -webkit-backdrop-filter: blur(20px) saturate(190%);
-    padding: 20px 24px;
+    padding: 16px 20px;
     height: 100vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -43,7 +44,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px;
+    margin-bottom: 12px;
     position: relative;
   }
   .logo-container {
@@ -78,10 +79,10 @@
 
   /* Product Info */
   .title {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 800;
     letter-spacing: -0.5px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
   .brand {
     font-size: 11px;
@@ -89,14 +90,14 @@
     color: var(--primary);
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
     display: block;
   }
   .desc {
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 12px;
+    line-height: 1.4;
     color: var(--text-muted);
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
 
   /* Dimensions pill row */
@@ -131,11 +132,11 @@
   .specs-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     background: rgba(0, 0, 0, 0.03);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 24px;
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 16px;
     border: 1px solid var(--border);
   }
   .spec-row {
@@ -167,8 +168,8 @@
   .downloads {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 16px;
   }
   .btn-cad {
     display: flex;

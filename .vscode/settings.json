@@ -1,0 +1,11 @@
+{
+  "liveServer.settings.port": 3000,
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.ignoreFiles": [
+    ".vscode/**",
+    ".git/**",
+    "**/*.glb",
+    "**/*.usdz",
+    "cad/**"
+  ]
+}
