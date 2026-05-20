@@ -44,27 +44,39 @@
     margin-bottom: 8px;
     position: relative;
   }
-  .logo-container {
-    position: relative;
+  .logo-lockup {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .logo-badge {
+    background: #FF8C3C;
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 32px;
+    font-size: 12px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
   }
-  .logo-glow {
-    position: absolute;
-    width: 60px;
-    height: 60px;
-    background: radial-gradient(circle, rgba(255, 140, 60, 0.25) 0%, rgba(255, 140, 60, 0) 70%);
-    pointer-events: none;
-    z-index: 1;
+  .logo-divider {
+    width: 2px;
+    height: 28px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 2px;
+    flex-shrink: 0;
   }
-  .logo-img {
-    height: 22px;
-    object-fit: contain;
-    position: relative;
-    z-index: 2;
+  .logo-text {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text);
+    line-height: 1.4;
   }
   .badge {
     font-size: 10px;
@@ -197,9 +209,10 @@
 <body>
 
   <div class="header">
-    <div class="logo-container">
-      <div class="logo-glow"></div>
-      <img src="./logo-mmc.png" alt="MMC" class="logo-img">
+    <div class="logo-lockup">
+      <div class="logo-badge">MMC</div>
+      <div class="logo-divider"></div>
+      <div class="logo-text">Mantenimiento<br>Mayor<br>y Construcción</div>
     </div>
     <span class="badge">Detalle AR</span>
   </div>
