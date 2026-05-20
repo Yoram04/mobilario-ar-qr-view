@@ -230,7 +230,73 @@
     line-height: 1.65;
     font-weight: 400;
     max-width: 300px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+  }
+
+  /* ── WELD ANIMATION ── */
+  .hero-weld {
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+  }
+  .weld-scene {
+    position: relative;
+    width: 110px;
+    height: 56px;
+    flex-shrink: 0;
+  }
+  .weld-beam-h {
+    position: absolute;
+    top: 50%; left: 0;
+    width: 100%; height: 9px;
+    background: linear-gradient(90deg, #999 0%, #d0d0d0 40%, #bbb 100%);
+    border-radius: 2px;
+    transform: translateY(-50%);
+  }
+  .weld-beam-v {
+    position: absolute;
+    left: 38px; top: 0;
+    width: 9px; height: 100%;
+    background: linear-gradient(180deg, #bbb 0%, #d0d0d0 50%, #999 100%);
+    border-radius: 2px;
+  }
+  .weld-arc {
+    position: absolute;
+    left: 38px; top: 50%;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: #fff;
+    transform: translateY(-50%);
+    box-shadow: 0 0 4px 2px #fff, 0 0 10px 4px #FF8C3C, 0 0 22px 8px rgba(255,140,60,0.5);
+    animation: arc-flicker 0.12s ease-in-out infinite alternate;
+    z-index: 2;
+  }
+  @keyframes arc-flicker {
+    from { opacity: 0.75; transform: translateY(-50%) scale(0.85); }
+    to   { opacity: 1;    transform: translateY(-50%) scale(1.2);
+           box-shadow: 0 0 6px 3px #fff, 0 0 14px 6px #FFD700, 0 0 28px 12px rgba(255,200,60,0.55); }
+  }
+  .weld-spark {
+    position: absolute;
+    left: 42px; top: 50%;
+    width: 2px;
+    border-radius: 2px;
+    background: linear-gradient(to top, transparent, #FFD700);
+    transform-origin: bottom center;
+    opacity: 0;
+    z-index: 3;
+  }
+  .weld-spark.s1 { height:10px; animation: sp 1.1s ease-out 0.0s infinite; --rx:-55deg; --tx:-18px; --ty:-22px; }
+  .weld-spark.s2 { height: 7px; animation: sp 0.9s ease-out 0.2s infinite; --rx:-30deg; --tx: -8px; --ty:-26px; }
+  .weld-spark.s3 { height:12px; animation: sp 1.3s ease-out 0.4s infinite; --rx:  5deg; --tx:  4px; --ty:-28px; }
+  .weld-spark.s4 { height: 8px; animation: sp 1.0s ease-out 0.6s infinite; --rx: 35deg; --tx: 18px; --ty:-20px; }
+  .weld-spark.s5 { height: 6px; animation: sp 0.8s ease-out 0.1s infinite; --rx:-70deg; --tx:-24px; --ty:-12px; }
+  .weld-spark.s6 { height:11px; animation: sp 1.2s ease-out 0.35s infinite; --rx: 60deg; --tx: 22px; --ty:-14px; }
+  .weld-spark.s7 { height: 9px; animation: sp 1.0s ease-out 0.55s infinite; --rx:-20deg; --tx:-10px; --ty:-18px; }
+  @keyframes sp {
+    0%   { opacity:1;   transform: translate(0,0) rotate(var(--rx)) scaleY(1); }
+    80%  { opacity:0.4; transform: translate(var(--tx), var(--ty)) rotate(var(--rx)) scaleY(0.4); }
+    100% { opacity:0;   transform: translate(var(--tx), var(--ty)) rotate(var(--rx)) scaleY(0); }
   }
 
   /* ── MARQUEE TICKER ── */
@@ -895,6 +961,20 @@
         <div class="catalog-eyebrow">AR Ready</div>
         <h1>Elementos <span class="title-brand">by <span class="title-brand-highlight">MMC</span></span></h1>
         <p>Visualiza, mide y proyecta piezas a escala real en Realidad Aumentada.</p>
+        <div class="hero-weld">
+          <div class="weld-scene">
+            <div class="weld-beam-h"></div>
+            <div class="weld-beam-v"></div>
+            <div class="weld-arc"></div>
+            <div class="weld-spark s1"></div>
+            <div class="weld-spark s2"></div>
+            <div class="weld-spark s3"></div>
+            <div class="weld-spark s4"></div>
+            <div class="weld-spark s5"></div>
+            <div class="weld-spark s6"></div>
+            <div class="weld-spark s7"></div>
+          </div>
+        </div>
         <div class="hero-ticker">
           <div class="hero-ticker-track">
             <span class="hero-ticker-item"><span class="dot"></span>Realidad Aumentada</span>
