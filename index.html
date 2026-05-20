@@ -23,8 +23,8 @@
     --light-bg: #F4F4F7;
     --glass-white: rgba(255,255,255,0.52);
     --glass-border: rgba(255,255,255,0.45);
-    --glass-blur: blur(24px) saturate(180%);
-    --glass-blur-sm: blur(12px) saturate(160%);
+    --glass-blur: blur(12px) saturate(150%);
+    --glass-blur-sm: blur(8px) saturate(150%);
     --text: #1D1D1F;
     --text-muted: #6E6E73;
     --radius-xl: 28px;
@@ -54,6 +54,7 @@
     visibility: hidden;
     transition: opacity 0.45s var(--smooth), visibility 0.45s, transform 0.45s var(--smooth);
     overflow: hidden;
+    will-change: transform, opacity;
   }
 
   .screen.active { opacity:1; visibility:visible; transform:none !important; }
@@ -91,6 +92,8 @@
     background: radial-gradient(circle, rgba(255,140,60,0.16) 0%, transparent 65%);
     border-radius:50%;
     animation: driftA 20s ease-in-out infinite alternate;
+    will-change: transform;
+    transform: translateZ(0);
   }
   .catalog-bg::after {
     content:'';
@@ -100,6 +103,8 @@
     background: radial-gradient(circle, rgba(91,134,229,0.13) 0%, transparent 65%);
     border-radius:50%;
     animation: driftB 26s ease-in-out infinite alternate;
+    will-change: transform;
+    transform: translateZ(0);
   }
   @keyframes driftA { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(60px,40px) scale(1.15)} }
   @keyframes driftB { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(-50px,-30px) scale(1.1)} }
@@ -252,6 +257,8 @@
     animation: cardUp 0.6s var(--smooth) both;
     backdrop-filter: var(--glass-blur-sm);
     -webkit-backdrop-filter: var(--glass-blur-sm);
+    will-change: transform;
+    transform: translateZ(0);
   }
   .catalog-card::before {
     content:'';
@@ -292,7 +299,7 @@
     border: 1px solid rgba(255,255,255,0.85);
     overflow: hidden;
     position: relative;
-    transition: all 0.35s var(--smooth);
+    transition: border-color 0.35s var(--smooth), box-shadow 0.35s var(--smooth);
   }
   .catalog-card:hover .catalog-card-image {
     background: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.65) 100%);
@@ -384,7 +391,8 @@
     border: 1px solid var(--glass-border);
     display: flex; align-items: center; justify-content: center;
     color: var(--text); cursor: pointer;
-    transition: all 0.3s var(--spring);
+    transition: background 0.3s var(--spring), transform 0.3s var(--spring);
+    will-change: transform;
     box-shadow: 0 4px 16px rgba(0,0,0,0.07);
     z-index: 15;
   }
@@ -427,7 +435,7 @@
     font-size: 11px; font-weight: 700;
     color: var(--text-muted); cursor: pointer;
     display: flex; align-items: center; gap: 4px;
-    transition: all 0.25s var(--smooth);
+    transition: background 0.25s var(--smooth), color 0.25s var(--smooth), box-shadow 0.25s var(--smooth);
   }
   .view-toggle-btn.active {
     background: rgba(255,255,255,0.88);
@@ -459,7 +467,8 @@
     cursor: pointer;
     box-shadow: 0 4px 16px rgba(0,0,0,0.07);
     display: flex; align-items: center; gap: 6px;
-    transition: all 0.3s var(--smooth);
+    transition: background 0.3s var(--smooth), transform 0.3s var(--smooth), color 0.3s var(--smooth), border-color 0.3s var(--smooth);
+    will-change: transform;
     z-index: 5; color: var(--text);
   }
   .cota-toggle:hover  { background:rgba(255,255,255,0.8); transform:translateY(-1px); }
@@ -622,7 +631,8 @@
     padding:12px 4px; border-radius:16px;
     border:1px solid rgba(255,255,255,0.6);
     box-shadow:0 2px 8px rgba(0,0,0,0.02);
-    transition: all 0.3s var(--spring);
+    transition: transform 0.3s var(--spring), background 0.3s var(--spring);
+    will-change: transform;
   }
   .dim-item:hover { transform:translateY(-2px) scale(1.03); background:rgba(255,255,255,0.8); }
   .dim-label {
@@ -640,7 +650,8 @@
     color: #FFFFFF;
     border:none; padding:15px; border-radius:var(--radius-lg);
     font-size:15px; font-weight:700; cursor:pointer;
-    transition: all 0.3s var(--spring);
+    transition: background 0.3s var(--spring), transform 0.3s var(--spring), box-shadow 0.3s var(--spring);
+    will-change: transform;
     box-shadow: 0 8px 28px var(--primary-glow), 0 2px 8px rgba(255,140,60,0.18);
     letter-spacing:0.2px;
   }
@@ -660,7 +671,7 @@
     border-radius:16px; padding:14px 18px;
     font-size:13px; font-weight:800; color:var(--text);
     display:flex; justify-content:space-between; align-items:center;
-    cursor:pointer; transition:all 0.3s var(--smooth);
+    cursor:pointer; transition:background 0.3s var(--smooth), border-radius 0.3s var(--smooth);
     box-shadow:0 2px 8px rgba(0,0,0,0.02);
   }
   .specs-toggle-btn:hover { background:rgba(255,255,255,0.72); }
@@ -753,7 +764,7 @@
     font-size: 13.5px;
     font-weight: 500;
     color: var(--text);
-    transition: all 0.3s var(--smooth);
+    transition: border-color 0.3s var(--smooth), background 0.3s var(--smooth), box-shadow 0.3s var(--smooth);
   }
   .search-input:focus {
     outline: none;
@@ -791,7 +802,8 @@
     cursor: pointer;
     box-shadow: 0 4px 16px rgba(0,0,0,0.07);
     display: flex; align-items: center; gap: 6px;
-    transition: all 0.3s var(--smooth);
+    transition: background 0.3s var(--smooth), transform 0.3s var(--smooth);
+    will-change: transform;
     z-index: 5; color: var(--text);
   }
   .share-btn:hover  { background:rgba(255,255,255,0.8); transform:translateY(-1px); }
@@ -1031,42 +1043,58 @@
   ];
 
   function startBBoxCanvas() {
-    if (bboxRafId) cancelAnimationFrame(bboxRafId);
+    if (bboxRafId) { cancelAnimationFrame(bboxRafId); bboxRafId = null; }
     const canvas = document.getElementById('bbox-canvas');
     const ctx = canvas.getContext('2d');
+    let lastWidth = 0, lastHeight = 0;
+
     function draw() {
+      bboxRafId = requestAnimationFrame(draw);
+
+      if (!viewer.classList.contains('show-cotas')) {
+        if (lastWidth !== 0) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          lastWidth = 0;
+        }
+        return; // Prevents layout thrashing when hidden
+      }
+
       const vr = viewer.getBoundingClientRect();
-      if (canvas.width !== Math.floor(vr.width) || canvas.height !== Math.floor(vr.height)) {
-        canvas.width  = Math.floor(vr.width);
-        canvas.height = Math.floor(vr.height);
+      const w = Math.floor(vr.width);
+      const h = Math.floor(vr.height);
+
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width  = w;
+        canvas.height = h;
+        lastWidth = w;
+        lastHeight = h;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (viewer.classList.contains('show-cotas')) {
-        const pts = [];
-        for (let i = 0; i < 8; i++) {
-          const el = viewer.querySelector(`[slot="corner-${i}"]`);
-          if (!el) { pts.push(null); continue; }
-          const r  = el.getBoundingClientRect();
-          const cx = (r.left + r.right)  / 2 - vr.left;
-          const cy = (r.top  + r.bottom) / 2 - vr.top;
-          const op = parseFloat(getComputedStyle(el).opacity);
-          pts.push({ x: cx, y: cy, vis: op > 0.5 });
-        }
-        BBOX_EDGES.forEach(([a, b]) => {
-          const pa = pts[a], pb = pts[b];
-          if (!pa || !pb) return;
-          const bright = pa.vis && pb.vis;
-          ctx.beginPath();
-          ctx.strokeStyle = bright ? 'rgba(255,255,255,0.72)' : 'rgba(255,255,255,0.18)';
-          ctx.lineWidth   = bright ? 1.5 : 1;
-          if (!bright) ctx.setLineDash([3, 6]); else ctx.setLineDash([]);
-          ctx.moveTo(pa.x, pa.y);
-          ctx.lineTo(pb.x, pb.y);
-          ctx.stroke();
-        });
-        ctx.setLineDash([]);
+
+      const pts = [];
+      for (let i = 0; i < 8; i++) {
+        const el = viewer.querySelector(`[slot="corner-${i}"]`);
+        if (!el) { pts.push(null); continue; }
+        const r  = el.getBoundingClientRect();
+        const cx = (r.left + r.right)  / 2 - vr.left;
+        const cy = (r.top  + r.bottom) / 2 - vr.top;
+        const op = parseFloat(getComputedStyle(el).opacity);
+        pts.push({ x: cx, y: cy, vis: op > 0.5 });
       }
-      bboxRafId = requestAnimationFrame(draw);
+
+      BBOX_EDGES.forEach(([a, b]) => {
+        const pa = pts[a], pb = pts[b];
+        if (!pa || !pb) return;
+        const bright = pa.vis && pb.vis;
+        ctx.beginPath();
+        ctx.strokeStyle = bright ? 'rgba(255,255,255,0.72)' : 'rgba(255,255,255,0.18)';
+        ctx.lineWidth   = bright ? 1.5 : 1;
+        if (!bright) ctx.setLineDash([3, 6]); else ctx.setLineDash([]);
+        ctx.moveTo(pa.x, pa.y);
+        ctx.lineTo(pb.x, pb.y);
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
     }
     bboxRafId = requestAnimationFrame(draw);
   }
