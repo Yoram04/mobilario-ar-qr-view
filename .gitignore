@@ -1,0 +1,6 @@
+node_modules/
+.claude/
+*.log
+blender_test.py
+glb_to_usdz.py
+paso-gato-fixed.glb

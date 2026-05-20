@@ -2,1444 +2,1449 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MOBILARIO AR QR VIEW by MMC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>AR View - MMC</title>
+<link rel="icon" type="image/png" href="./logo-mmc.png">
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=SF+Pro+Display:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  font-family:'Inter','SF Pro Display',-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
-  background:#fafafa;
-  min-height:100vh;
-  color:#1d1d1f;
-  overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  font-feature-settings:"cv02","cv03","cv04","cv11";
-}
+  :root {
+    --primary: #FF8C3C;
+    --primary-glow: rgba(255,140,60,0.28);
+    --primary-dim: rgba(255,140,60,0.12);
+    --dark-bg: #08080A;
+    --dark-surface: rgba(255,255,255,0.055);
+    --dark-surface-hover: rgba(255,255,255,0.1);
+    --dark-border: rgba(255,255,255,0.09);
+    --dark-text: #FFFFFF;
+    --dark-muted: #A1A1A6;
+    --light-bg: #F4F4F7;
+    --glass-white: rgba(255,255,255,0.52);
+    --glass-border: rgba(255,255,255,0.45);
+    --glass-blur: blur(24px) saturate(180%);
+    --glass-blur-sm: blur(12px) saturate(160%);
+    --text: #1D1D1F;
+    --text-muted: #6E6E73;
+    --radius-xl: 28px;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --spring: cubic-bezier(0.34,1.56,0.64,1);
+    --smooth: cubic-bezier(0.16,1,0.3,1);
+  }
 
-body::before{
-  content:'';
-  position:fixed;
-  top:0;left:0;right:0;bottom:0;
-  background:
-    radial-gradient(circle at 20% 30%,rgba(255,140,60,.08) 0%,transparent 50%),
-    radial-gradient(circle at 80% 70%,rgba(255,165,80,.06) 0%,transparent 50%);
-  pointer-events:none;
-  z-index:0;
-}
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-.header{
-  background:rgba(255,255,255,.8);
-  backdrop-filter:blur(30px) saturate(180%);
-  -webkit-backdrop-filter:blur(30px) saturate(180%);
-  border-bottom:1px solid rgba(0,0,0,.06);
-  padding:32px 24px;
-  text-align:center;
-  position:sticky;
-  top:0;
-  z-index:100;
-}
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--light-bg);
+    height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
 
-.logo{
-  width:120px;
-  margin:0 auto 16px;
-  display:block;
-  filter:drop-shadow(0 8px 24px rgba(255,140,60,.3));
-  animation:pulse 3s infinite;
-}
+  .screen-container { position:relative; width:100%; height:100%; }
 
-@keyframes pulse{
-  0%,100%{filter:drop-shadow(0 8px 24px rgba(255,140,60,.3))}
-  50%{filter:drop-shadow(0 8px 32px rgba(255,140,60,.5))}
-}
+  .screen {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.45s var(--smooth), visibility 0.45s, transform 0.45s var(--smooth);
+    overflow: hidden;
+  }
 
-h1{
-  font-size:38px;
-  font-weight:800;
-  letter-spacing:-1.8px;
-  color:#1d1d1f;
-  margin-bottom:8px;
-  font-family:'Inter',sans-serif;
-}
+  .screen.active { opacity:1; visibility:visible; transform:none !important; }
 
-.sub{
-  font-size:11px;
-  color:#86868b;
-  letter-spacing:3px;
-  text-transform:uppercase;
-  font-weight:600;
-  font-family:'Inter',sans-serif;
-}
+  #catalog-screen {
+    transform: scale(1.02);
+    background: var(--light-bg);
+    display: flex;
+    flex-direction: column;
+  }
 
-.content{
-  padding:40px 20px;
-  max-width:1000px;
-  margin:0 auto;
-  position:relative;
-  z-index:1;
-}
+  #viewer-screen {
+    transform: translateY(24px);
+    background: var(--light-bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(255,140,60,0.05) 0%, transparent 50%),
+      radial-gradient(circle at 85% 90%, rgba(91,134,229,0.06) 0%, transparent 50%);
+    display: flex;
+    flex-direction: column;
+  }
 
-h2{
-  font-size:36px;
-  font-weight:800;
-  margin-bottom:32px;
-  color:#1d1d1f;
-  letter-spacing:-1.5px;
-  font-family:'Inter',sans-serif;
-}
+  /* ── CATALOG BG ANIMATED ORBS ── */
+  .catalog-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .catalog-bg::before {
+    content:'';
+    position:absolute;
+    top:-20%; left:-20%;
+    width:70vw; height:70vw;
+    background: radial-gradient(circle, rgba(255,140,60,0.16) 0%, transparent 65%);
+    border-radius:50%;
+    animation: driftA 20s ease-in-out infinite alternate;
+  }
+  .catalog-bg::after {
+    content:'';
+    position:absolute;
+    bottom:-15%; right:-15%;
+    width:65vw; height:65vw;
+    background: radial-gradient(circle, rgba(91,134,229,0.13) 0%, transparent 65%);
+    border-radius:50%;
+    animation: driftB 26s ease-in-out infinite alternate;
+  }
+  @keyframes driftA { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(60px,40px) scale(1.15)} }
+  @keyframes driftB { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(-50px,-30px) scale(1.1)} }
 
-.card{
-  background:rgba(255,255,255,.7);
-  backdrop-filter:blur(30px) saturate(180%);
-  -webkit-backdrop-filter:blur(30px) saturate(180%);
-  border:1px solid rgba(255,255,255,.8);
-  border-radius:24px;
-  padding:28px;
-  margin-bottom:24px;
-  box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 32px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.9);
-  transition:all .4s cubic-bezier(.16,1,.3,1);
-  position:relative;
-  overflow:hidden;
-}
+  /* ── CATALOG CONTENT ── */
+  .catalog-content {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0 20px calc(36px + env(safe-area-inset-bottom,0px)) 20px;
+  }
+  .catalog-content::-webkit-scrollbar { display:none; }
 
-.card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 1px 2px rgba(0,0,0,.04),0 20px 60px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,.9);
-  border-color:rgba(255,140,60,.3);
-}
+  /* ── TOPBAR ── */
+  .catalog-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: calc(env(safe-area-inset-top,16px) + 22px) 0 0 0;
+    margin-bottom: 32px;
+    flex-shrink: 0;
+  }
+  .catalog-topbar-logo-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    margin-left: -12px;
+  }
+  .catalog-topbar-logo-glow {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    background: radial-gradient(circle, rgba(255, 140, 60, 0.28) 0%, rgba(255, 140, 60, 0) 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .catalog-topbar-logo {
+    height: 28px;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+    opacity: 0.95;
+  }
+  .catalog-topbar-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
 
-.card h3{
-  font-size:26px;
-  font-weight:700;
-  margin-bottom:8px;
-  color:#1d1d1f;
-  letter-spacing:-.8px;
-  font-family:'Inter',sans-serif;
-}
+  /* ── HERO ── */
+  .catalog-hero { margin-bottom: 28px; }
 
-.card p{
-  font-size:15px;
-  color:#86868b;
-  margin-bottom:20px;
-  font-weight:400;
-  line-height:1.5;
-}
+  .catalog-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--primary);
+    background: var(--primary-dim);
+    border: 1px solid rgba(255,140,60,0.18);
+    padding: 5px 13px;
+    border-radius: 30px;
+    margin-bottom: 16px;
+  }
+  .catalog-eyebrow::before {
+    content:'';
+    width:6px; height:6px;
+    border-radius:50%;
+    background: var(--primary);
+    box-shadow: 0 0 8px var(--primary);
+    animation: orbPulse 2s ease-in-out infinite;
+  }
+  @keyframes orbPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.55;transform:scale(0.8)} }
 
-.viewer-wrapper{
-  position:relative;
-  margin-bottom:20px;
-}
+  .catalog-hero h1 {
+    font-size: clamp(34px, 7.5vw, 46px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .catalog-hero h1 .title-brand {
+    font-weight: 300;
+    color: var(--text-muted);
+    letter-spacing: -1.0px;
+    white-space: nowrap;
+  }
+  .catalog-hero h1 .title-brand-highlight {
+    font-weight: 800;
+    color: var(--primary);
+  }
 
-.viewer-container{
-  width:100%;
-  height:420px;
-  border-radius:18px;
-  overflow:hidden;
-  background:#f5f5f7;
-  border:1px solid rgba(0,0,0,.06);
-  box-shadow:inset 0 2px 8px rgba(0,0,0,.04);
-}
+  .catalog-hero p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-weight: 400;
+    max-width: 340px;
+  }
 
-model-viewer{
-  width:100%;
-  height:100%;
-  background:linear-gradient(135deg,#f5f5f7 0%,#fafafa 100%);
-}
+  /* ── CATALOG GRID ── */
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  @media (min-width: 600px) { .catalog-grid { grid-template-columns: repeat(2,1fr); } }
+  @media (min-width: 960px) { .catalog-grid { grid-template-columns: repeat(3,1fr); } }
 
-/* Botón flotante de cotas */
-.cota-btn{
-  position:absolute;
-  top:12px;
-  right:12px;
-  z-index:10;
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
-  border:1px solid rgba(255,140,60,.3);
-  color:#ff7a1f;
-  padding:10px 16px;
-  border-radius:12px;
-  font-size:13px;
-  font-weight:700;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:6px;
-  transition:all .3s;
-  box-shadow:0 4px 12px rgba(0,0,0,.1);
-  text-transform:uppercase;
-  letter-spacing:.5px;
-}
+  /* ── CARD ── */
+  .catalog-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: var(--radius-xl);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: background 0.35s var(--smooth), border-color 0.35s var(--smooth),
+                transform 0.4s var(--spring), box-shadow 0.4s var(--smooth);
+    animation: cardUp 0.6s var(--smooth) both;
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+  }
+  .catalog-card::before {
+    content:'';
+    position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.045) 0%, transparent 55%);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
 
-.cota-btn:hover{
-  background:rgba(255,140,60,.15);
-  transform:translateY(-2px);
-  box-shadow:0 6px 16px rgba(255,140,60,.25);
-}
+  @keyframes cardUp {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .catalog-card:nth-child(1){animation-delay:0ms}
+  .catalog-card:nth-child(2){animation-delay:70ms}
+  .catalog-card:nth-child(3){animation-delay:140ms}
+  .catalog-card:nth-child(4){animation-delay:210ms}
+  .catalog-card:nth-child(5){animation-delay:280ms}
 
-.cota-btn.active{
-  background:#ff8c3c;
-  color:#fff;
-  border-color:#ff8c3c;
-}
+  .catalog-card:hover {
+    background: rgba(255, 255, 255, 0.82);
+    border-color: rgba(255,140,60,0.38);
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,140,60,0.08), inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+  .catalog-card:hover::before { opacity:1; }
+  .catalog-card:active { transform:scale(0.97)!important; transition:transform 0.12s ease!important; }
 
-/* Hotspots de cotas */
-.hotspot{
-  background:rgba(255,140,60,.95);
-  color:#fff;
-  border:2px solid #fff;
-  border-radius:20px;
-  padding:6px 12px;
-  font-size:13px;
-  font-weight:700;
-  white-space:nowrap;
-  box-shadow:0 4px 12px rgba(0,0,0,.25);
-  pointer-events:none;
-  user-select:none;
-  letter-spacing:.3px;
-}
+  .catalog-card-image {
+    height: 190px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.85);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.35s var(--smooth);
+  }
+  .catalog-card:hover .catalog-card-image {
+    background: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.65) 100%);
+    border-color: rgba(255,140,60,0.15);
+  }
+  .catalog-card-image svg {
+    width: 68px; height: 68px;
+    stroke: var(--text);
+    transition: transform 0.4s var(--spring), stroke 0.3s ease;
+  }
+  .catalog-card:hover .catalog-card-image svg {
+    transform: scale(1.14) translateY(-2px);
+    stroke: rgba(255,255,255,0.95);
+  }
+  .catalog-card-image img {
+    width:100%; height:100%;
+    object-fit: contain;
+    padding: 4px;
+    transition: transform 0.4s var(--spring);
+  }
+  .catalog-card:hover .catalog-card-image img { transform:scale(1.1); }
 
-.hotspot::before{
-  content:'';
-  position:absolute;
-  top:50%;
-  left:-8px;
-  width:8px;
-  height:1px;
-  background:#fff;
-}
+  .catalog-card-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: 9px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--primary);
+    background: var(--primary-dim);
+    border: 1px solid rgba(255,140,60,0.22);
+    padding: 4px 10px;
+    border-radius: 20px;
+    z-index: 2;
+  }
 
-/* Ocultar hotspots por defecto */
-model-viewer:not(.show-cotas) [slot^="hotspot"]{
-  display:none !important;
-}
+  .catalog-card-info { display:flex; flex-direction:column; gap:5px; }
 
-.dims{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-bottom:20px;
-}
+  .catalog-card-title {
+    font-size: 17px; font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .catalog-card-desc {
+    font-size: 12px; color: var(--text-muted);
+    line-height: 1.5; font-weight: 400;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 36px;
+  }
 
-.dim{
-  background:rgba(255,255,255,.6);
-  backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.9);
-  padding:16px 12px;
-  border-radius:14px;
-  text-align:center;
-  transition:all .3s;
-}
+  .catalog-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 12px;
+    margin-top: auto;
+  }
+  .catalog-card-dims {
+    font-size: 11px; font-weight: 600;
+    color: var(--text-muted);
+  }
+  .catalog-card-btn {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 800;
+    color: var(--primary);
+    background: none; border: none; cursor: pointer;
+  }
+  .catalog-card-btn svg {
+    width:13px; height:13px;
+    stroke: currentColor;
+    transition: transform 0.3s var(--spring);
+  }
+  .catalog-card:hover .catalog-card-btn svg { transform:translateX(4px); }
 
-.dim:hover{
-  background:rgba(255,140,60,.08);
-  border-color:rgba(255,140,60,.3);
-  transform:translateY(-2px);
-}
+  /* ── VIEWER: FLOATING ── */
+  .back-btn-floating {
+    position: absolute;
+    top: calc(12px + env(safe-area-inset-top,20px));
+    left: 16px;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--glass-white);
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+    border: 1px solid var(--glass-border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text); cursor: pointer;
+    transition: all 0.3s var(--spring);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    z-index: 15;
+  }
+  .back-btn-floating:hover  { background:rgba(255,255,255,0.85); transform:scale(1.08); }
+  .back-btn-floating:active { transform:scale(0.92)!important; transition:transform 0.1s ease!important; }
+  .back-btn-floating svg { width:18px; height:18px; }
 
-.dim label{
-  font-size:10px;
-  color:#86868b;
-  font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:1.5px;
-  display:block;
-  margin-bottom:8px;
-  font-family:'Inter',sans-serif;
-}
+  .logo-floating {
+    position: absolute;
+    top: calc(12px + env(safe-area-inset-top,20px));
+    right: 16px;
+    height: 42px; padding: 6px 14px;
+    border-radius: 24px;
+    background: var(--glass-white);
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+    border: 1px solid var(--glass-border);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 15;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  }
+  .logo-floating img { height:24px; object-fit:contain; }
 
-.dim span{
-  font-size:26px;
-  font-weight:800;
-  color:#ff8c3c;
-  letter-spacing:-1px;
-  font-family:'Inter',sans-serif;
-  font-variant-numeric:tabular-nums;
-}
+  .view-toggle {
+    position: absolute;
+    top: calc(64px + env(safe-area-inset-top,20px));
+    left: 16px;
+    background: var(--glass-white);
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px; padding: 3px;
+    display: flex; gap: 2px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    z-index: 5;
+  }
+  .view-toggle-btn {
+    border:none; background:none;
+    padding: 6px 13px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+    transition: all 0.25s var(--smooth);
+  }
+  .view-toggle-btn.active {
+    background: rgba(255,255,255,0.88);
+    color: var(--text);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  .ar-badge-dot {
+    width:7px; height:7px;
+    background:#34C759; border-radius:50%;
+    display:inline-block;
+    box-shadow: 0 0 0 2px rgba(52,199,89,0.25);
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+  @keyframes dotPulse {
+    0%,100%{box-shadow:0 0 0 0 rgba(52,199,89,0.4)}
+    60%{box-shadow:0 0 0 5px rgba(52,199,89,0)}
+  }
 
-.ar-btn{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  width:100%;
-  padding:18px;
-  background:rgba(255,255,255,.6);
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
-  color:#ff8c3c;
-  border:1px solid rgba(255,140,60,.25);
-  border-radius:14px;
-  font-size:14px;
-  font-weight:700;
-  cursor:pointer;
-  text-transform:uppercase;
-  letter-spacing:1.5px;
-  transition:all .3s cubic-bezier(.16,1,.3,1);
-  box-shadow:0 1px 2px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.8);
-  font-family:'Inter',sans-serif;
-}
+  .cota-toggle {
+    position: absolute;
+    top: calc(64px + env(safe-area-inset-top,20px));
+    right: 16px;
+    background: var(--glass-white);
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+    border: 1px solid var(--glass-border);
+    padding: 8px 15px; border-radius: 30px;
+    font-size: 11px; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.3s var(--smooth);
+    z-index: 5; color: var(--text);
+  }
+  .cota-toggle:hover  { background:rgba(255,255,255,0.8); transform:translateY(-1px); }
+  .cota-toggle:active { transform:scale(0.95)!important; transition:transform 0.1s ease!important; }
+  .cota-toggle.active {
+    background: var(--primary-dim);
+    color: var(--primary);
+    border-color: rgba(255,140,60,0.45);
+    box-shadow: 0 4px 20px rgba(255,140,60,0.14);
+  }
 
-.ar-btn:hover{
-  transform:translateY(-2px);
-  border-color:rgba(255,140,60,.5);
-  background:rgba(255,140,60,.1);
-  box-shadow:0 8px 24px rgba(255,140,60,.2);
-}
+  /* ── VIEWER SECTION ── */
+  .viewer-section {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  model-viewer {
+    width:100%; height:100%;
+    display:block;
+    --poster-color:transparent;
+  }
 
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:10px;
-  background:rgba(255,140,60,.1);
-  padding:7px 14px;
-  border-radius:20px;
-  color:#ff7a1f;
-  font-weight:700;
-  margin-bottom:14px;
-  letter-spacing:1.5px;
-  border:1px solid rgba(255,140,60,.2);
-  text-transform:uppercase;
-  font-family:'Inter',sans-serif;
-}
+  /* ── HOTSPOTS — estilo Amazon ── */
+  .hotspot {
+    background: rgba(255,255,255,0.97);
+    color: #1a1a1a;
+    border-radius: 100px;
+    padding: 7px 14px;
+    font-size: 13px; font-weight: 700;
+    white-space: nowrap; pointer-events: none;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.20), 0 0 0 1px rgba(0,0,0,0.07);
+    letter-spacing: -0.3px;
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'Inter', sans-serif;
+    transform: translate(-50%,-50%);
+  }
+  .hotspot-icon { font-size:10px; color:var(--primary); font-weight:900; }
+  .hotspot-label { opacity:0.45; font-size:11px; font-weight:600; }
+  .hotspot-val { font-weight:800; font-size:13px; }
 
-.badge::before{
-  content:'';
-  width:6px;height:6px;
-  border-radius:50%;
-  background:#ff8c3c;
-  box-shadow:0 0 8px rgba(255,140,60,.6);
-  animation:blink 2s infinite;
-}
+  .corner-dot {
+    width: 10px; height: 10px;
+    background: var(--primary);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%,-50%);
+    box-shadow: 0 0 0 2.5px rgba(255,255,255,0.95), 0 2px 8px rgba(0,0,0,0.28);
+  }
 
-@keyframes blink{
-  0%,100%{opacity:1}
-  50%{opacity:.4}
-}
+  #bbox-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 4;
+  }
 
-@media (max-width:600px){
-  .viewer-container{height:350px}
-  h1{font-size:30px}
-  h2{font-size:26px}
-  .dim span{font-size:20px}
-  .card{padding:22px}
-  .logo{width:100px}
-  .cota-btn{padding:8px 12px;font-size:11px}
-}
+  model-viewer:not(.show-cotas) [slot^="hotspot"],
+  model-viewer:not(.show-cotas) [slot^="corner"] { display:none!important; }
+
+  /* ── PROGRESS / ERROR ── */
+  #model-progress {
+    position:absolute; bottom:0; left:0; right:0;
+    height:3px; background:rgba(0,0,0,0.05);
+  }
+  #progress-fill {
+    height:100%; background:var(--primary);
+    width:0%; transition:width 0.2s ease-out;
+    box-shadow:0 0 8px var(--primary);
+  }
+  #model-error {
+    background:rgba(255,255,255,0.88);
+    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border-radius:var(--radius-lg);
+    margin:20px; border:1px solid rgba(255,255,255,0.6);
+    box-shadow:0 8px 32px rgba(0,0,0,0.08);
+  }
+
+  /* ── PHOTO VIEW ── */
+  .photo-view-container {
+    width:100%; height:100%;
+    display:none; align-items:center; justify-content:center;
+    padding:24px; position:absolute; inset:0; z-index:1;
+  }
+  .photo-view-img {
+    max-width:100%; max-height:80%;
+    object-fit:contain;
+    border-radius:var(--radius-xl);
+    box-shadow:0 20px 60px rgba(0,0,0,0.12);
+    background:rgba(255,255,255,0.7);
+    border:1px solid rgba(255,255,255,0.8);
+    padding:16px;
+  }
+
+  /* ── PRODUCT SHEET ── */
+  .product-sheet {
+    background: var(--glass-white);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-top-left-radius: 36px;
+    border-top-right-radius: 36px;
+    border-top: 1.5px solid rgba(255,255,255,0.55);
+    border-left: 1px solid rgba(255,255,255,0.3);
+    border-right: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 -16px 60px rgba(0,0,0,0.06);
+    padding: 14px 22px 0 22px;
+    position: relative; z-index: 20;
+    margin-top: -36px;
+    display: flex; flex-direction: column;
+    max-height: 52vh;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom,0px));
+  }
+  .sheet-handle {
+    width:40px; height:4px;
+    background:rgba(0,0,0,0.1); border-radius:2px;
+    margin:0 auto 14px;
+  }
+  .product-sheet-header-pinned {
+    flex-shrink:0;
+    padding-bottom:14px;
+    border-bottom:1px solid rgba(0,0,0,0.05);
+    margin-bottom:14px;
+  }
+  .product-scrollable {
+    overflow-y:auto; flex:1; padding-bottom:24px; scrollbar-width:none;
+  }
+  .product-scrollable::-webkit-scrollbar { display:none; }
+
+  .product-header {
+    display:flex; justify-content:space-between;
+    align-items:flex-start; margin-bottom:12px; gap:12px;
+  }
+  .product-title {
+    font-size:24px; font-weight:900;
+    letter-spacing:-0.8px; line-height:1.1; color:var(--text);
+  }
+  .product-brand {
+    display:inline-flex; align-items:center;
+    font-size:10px; color:var(--primary); font-weight:800;
+    background:var(--primary-dim); padding:5px 11px; border-radius:20px;
+    text-transform:uppercase; letter-spacing:0.8px; white-space:nowrap;
+    border:1px solid rgba(255,140,60,0.15);
+  }
+  .product-desc {
+    font-size:13px; color:var(--text-muted);
+    line-height:1.65; margin-bottom:18px; font-weight:400;
+  }
+
+  /* ── DIMENSIONS ── */
+  .dimensions-grid {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:8px; margin-bottom:18px;
+  }
+  .dim-item {
+    text-align:center;
+    background:rgba(255,255,255,0.5);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    padding:12px 4px; border-radius:16px;
+    border:1px solid rgba(255,255,255,0.6);
+    box-shadow:0 2px 8px rgba(0,0,0,0.02);
+    transition: all 0.3s var(--spring);
+  }
+  .dim-item:hover { transform:translateY(-2px) scale(1.03); background:rgba(255,255,255,0.8); }
+  .dim-label {
+    font-size:9px; color:var(--text-muted);
+    margin-bottom:4px; text-transform:uppercase;
+    letter-spacing:0.8px; font-weight:700;
+  }
+  .dim-val { font-size:14px; font-weight:800; color:var(--text); letter-spacing:-0.3px; }
+
+  /* ── AR BUTTON ── */
+  .btn-ar {
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%;
+    background: var(--primary);
+    color: #FFFFFF;
+    border:none; padding:15px; border-radius:var(--radius-lg);
+    font-size:15px; font-weight:700; cursor:pointer;
+    transition: all 0.3s var(--spring);
+    box-shadow: 0 8px 28px var(--primary-glow), 0 2px 8px rgba(255,140,60,0.18);
+    letter-spacing:0.2px;
+  }
+  .btn-ar:hover {
+    background:#FF9F56;
+    transform:translateY(-2px);
+    box-shadow:0 14px 40px var(--primary-glow), 0 4px 12px rgba(255,140,60,0.22);
+  }
+  .btn-ar:active { transform:scale(0.97)!important; transition:transform 0.1s ease!important; }
+  .btn-ar svg { width:19px; height:19px; stroke:currentColor; }
+
+  /* ── SPECS ── */
+  .specs-toggle-btn {
+    width:100%; background:rgba(255,255,255,0.42);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,0.5);
+    border-radius:16px; padding:14px 18px;
+    font-size:13px; font-weight:800; color:var(--text);
+    display:flex; justify-content:space-between; align-items:center;
+    cursor:pointer; transition:all 0.3s var(--smooth);
+    box-shadow:0 2px 8px rgba(0,0,0,0.02);
+  }
+  .specs-toggle-btn:hover { background:rgba(255,255,255,0.72); }
+  .specs-toggle-btn svg { transition:transform 0.3s var(--smooth); stroke-width:2.5px; }
+  .specs-toggle-btn.active { border-bottom-left-radius:0; border-bottom-right-radius:0; background:rgba(255,255,255,0.6); }
+  .specs-toggle-btn.active svg { transform:rotate(180deg); }
+
+  .specs-list {
+    background:rgba(255,255,255,0.3);
+    border:1px solid rgba(255,255,255,0.5);
+    border-bottom-left-radius:16px; border-bottom-right-radius:16px;
+    padding:16px 18px; display:flex; flex-direction:column; gap:12px;
+    border-top:none;
+  }
+  .spec-row {
+    display:flex; justify-content:space-between; align-items:flex-start;
+    font-size:12.5px; border-bottom:1px solid rgba(0,0,0,0.04);
+    padding-bottom:10px; gap:16px;
+  }
+  .spec-row:last-child { border-bottom:none; padding-bottom:0; }
+  .spec-key { font-weight:700; color:var(--text-muted); white-space:nowrap; }
+  .spec-val { font-weight:700; color:var(--text); text-align:right; line-height:1.4; }
+
+  /* ── DOWNLOADS ── */
+  .download-section { margin-bottom:18px; }
+  .download-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .download-btn {
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    background:rgba(255,255,255,0.42);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,0.5);
+    color:var(--text); padding:11px 8px; border-radius:14px;
+    font-size:12px; font-weight:700; text-decoration:none;
+    transition:all 0.3s var(--smooth); box-shadow:0 2px 8px rgba(0,0,0,0.02);
+  }
+  .download-btn:hover { background:rgba(255,255,255,0.72); transform:translateY(-2px); }
+  .download-btn:active { transform:scale(0.96)!important; transition:transform 0.1s ease!important; }
+  .download-btn svg { color:var(--primary); transform:rotate(180deg); }
+
+  /* ── THUMBNAIL CAROUSEL ── */
+  .carousel-title {
+    font-size:10px; font-weight:800; margin-bottom:10px;
+    color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;
+  }
+  .thumbnail-carousel {
+    display:flex; gap:11px; overflow-x:auto;
+    padding:4px 4px 12px; scrollbar-width:none;
+  }
+  .thumbnail-carousel::-webkit-scrollbar { display:none; }
+
+  .thumb-item {
+    width:62px; min-width:62px; height:62px;
+    border-radius:16px;
+    border:1.5px solid rgba(255,255,255,0.5);
+    background:rgba(255,255,255,0.42);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    cursor:pointer; overflow:hidden;
+    transition:all 0.3s var(--spring);
+    display:flex; align-items:center; justify-content:center;
+    padding:6px; box-shadow:0 2px 8px rgba(0,0,0,0.03);
+  }
+  .thumb-item:hover { transform:translateY(-3px) scale(1.05); background:rgba(255,255,255,0.7); border-color:rgba(255,140,60,0.25); }
+  .thumb-item:active { transform:scale(0.92)!important; transition:transform 0.1s ease!important; }
+  .thumb-item img { width:100%; height:100%; object-fit:contain; border-radius:8px; transition:transform 0.3s var(--spring); }
+  .thumb-item:hover img { transform:scale(1.1); }
+  .thumb-item.active { border-color:var(--primary); background:rgba(255,255,255,0.88); box-shadow:0 6px 18px rgba(255,140,60,0.16); }
+
+  /* ── SEARCH & CONTROLS ── */
+  .catalog-controls {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: cardUp 0.6s var(--smooth) both;
+    animation-delay: 50ms;
+  }
+  .search-container {
+    position: relative;
+    width: 100%;
+  }
+  .search-input {
+    width: 100%;
+    padding: 11px 16px 11px 42px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text);
+    transition: all 0.3s var(--smooth);
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: rgba(255, 140, 60, 0.4);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 20px rgba(255, 140, 60, 0.05);
+  }
+  .search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .search-input:focus + .search-icon {
+    color: var(--primary);
+  }
+
+  /* ── ADDITIONAL VIEWER STYLES ── */
+  .share-btn {
+    position: absolute;
+    top: calc(112px + env(safe-area-inset-top,20px));
+    right: 16px;
+    background: var(--glass-white);
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+    border: 1px solid var(--glass-border);
+    padding: 8px 15px; border-radius: 30px;
+    font-size: 11px; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.3s var(--smooth);
+    z-index: 5; color: var(--text);
+  }
+  .share-btn:hover  { background:rgba(255,255,255,0.8); transform:translateY(-1px); }
+  .share-btn:active { transform:scale(0.95)!important; transition:transform 0.1s ease!important; }
+
+  /* ── VIEW TRANSITIONS API ── */
+  @supports (view-transition-name: auto) {
+    ::view-transition-old(root) { animation:350ms var(--smooth) both vtOut; }
+    ::view-transition-new(root) { animation:480ms var(--smooth) both vtIn; }
+    @keyframes vtOut { from{opacity:1} to{opacity:0} }
+    @keyframes vtIn  { from{opacity:0;transform:scale(0.98)} to{opacity:1;transform:none} }
+  }
 </style>
 </head>
 <body>
 
-<div class="header">
-<img src="./logo-mmc.png" alt="MMC" class="logo">
-<h1>MOBILARIO AR</h1>
-<p class="sub">QR View · by MMC</p>
-</div>
+<div class="screen-container">
 
-<div class="content">
-<h2>Catálogo</h2>
+  <!-- ── CATALOG ── -->
+  <div id="catalog-screen" class="screen active">
+    <div class="catalog-bg"></div>
+    <div class="catalog-content">
 
-<!-- PASO GATO -->
-<div class="card">
-<div class="badge">QR001 · Activo</div>
-<h3>Paso Gato</h3>
-<p>Estructura de herrería con barandales de seguridad</p>
-<div class="viewer-wrapper">
-<button class="cota-btn" onclick="toggleCotas('m1', this)">
-📏 Ver cotas
-</button>
-<div class="viewer-container">
-<model-viewer id="m1" src="./paso-gato.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1">
-<div slot="hotspot-1" class="hotspot" data-position="0 0.6 0.55" data-normal="0 0 1">↕ 1.2m</div>
-<div slot="hotspot-2" class="hotspot" data-position="1.5 0 0" data-normal="0 1 0">↔ 3.0m</div>
-<div slot="hotspot-3" class="hotspot" data-position="0 0 0.55" data-normal="0 1 0">⇕ 1.1m</div>
-</model-viewer>
-</div>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>3.0m</span></div>
-<div class="dim"><label>Alto</label><span>1.2m</span></div>
-<div class="dim"><label>Fondo</label><span>1.1m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m1').activateAR()">
-📱 Ver en tu espacio
-</button>
-</div>
+      <div class="catalog-topbar">
+        <div class="catalog-topbar-logo-wrapper">
+          <div class="catalog-topbar-logo-glow"></div>
+          <img src="./logo-mmc.png" alt="MMC" class="catalog-topbar-logo">
+        </div>
+        <span class="catalog-topbar-label">Catálogo AR</span>
+      </div>
 
-<!-- SILLA -->
-<div class="card">
-<div class="badge">QR002 · Activo</div>
-<h3>Silla</h3>
-<p>Silla de herrería con asiento de madera</p>
-<div class="viewer-wrapper">
-<button class="cota-btn" onclick="toggleCotas('m2', this)">
-📏 Ver cotas
-</button>
-<div class="viewer-container">
-<model-viewer id="m2" src="./silla.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1">
-<div slot="hotspot-1" class="hotspot" data-position="0 0.625 0.25" data-normal="0 0 1">↕ 1.25m</div>
-<div slot="hotspot-2" class="hotspot" data-position="0.3 0 0" data-normal="0 1 0">↔ 0.60m</div>
-<div slot="hotspot-3" class="hotspot" data-position="0 0 0.25" data-normal="0 1 0">⇕ 0.50m</div>
-</model-viewer>
-</div>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>0.60m</span></div>
-<div class="dim"><label>Alto</label><span>1.25m</span></div>
-<div class="dim"><label>Fondo</label><span>0.50m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m2').activateAR()">
-📱 Ver en tu espacio
-</button>
-</div>
+      <div class="catalog-hero">
+        <div class="catalog-eyebrow">AR Ready</div>
+        <h1>Mobiliario <span class="title-brand">by <span class="title-brand-highlight">MMC</span></span></h1>
+        <p>Visualiza, mide y proyecta piezas a escala real en Realidad Aumentada.</p>
+      </div>
 
-<!-- ASTRONAUTA -->
-<div class="card">
-<div class="badge">QR003 · Demo</div>
-<h3>Astronauta</h3>
-<p>Modelo de prueba optimizado</p>
-<div class="viewer-wrapper">
-<button class="cota-btn" onclick="toggleCotas('m3', this)">
-📏 Ver cotas
-</button>
-<div class="viewer-container">
-<model-viewer id="m3" src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1">
-<div slot="hotspot-1" class="hotspot" data-position="0 0.9 0.25" data-normal="0 0 1">↕ 1.8m</div>
-<div slot="hotspot-2" class="hotspot" data-position="0.25 0 0" data-normal="0 1 0">↔ 0.5m</div>
-<div slot="hotspot-3" class="hotspot" data-position="0 0 0.25" data-normal="0 1 0">⇕ 0.5m</div>
-</model-viewer>
-</div>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>0.5m</span></div>
-<div class="dim"><label>Alto</label><span>1.8m</span></div>
-<div class="dim"><label>Fondo</label><span>0.5m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m3').activateAR()">
-📱 Ver en tu espacio
-</button>
-</div>
+      <div class="catalog-controls">
+        <div class="search-container">
+          <input type="text" class="search-input" placeholder="Buscar muebles..." oninput="handleSearch(this.value)">
+          <span class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+        </div>
+      </div>
 
+      <div class="catalog-grid" id="catalog-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── VIEWER ── -->
+  <div id="viewer-screen" class="screen">
+
+    <div class="viewer-section">
+      <button class="back-btn-floating" onclick="showCatalog()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+
+      <div class="logo-floating">
+        <img src="./logo-mmc.png" alt="MMC">
+      </div>
+
+      <div class="view-toggle">
+        <button class="view-toggle-btn active" id="btn-view-3d" onclick="setViewMode('3d')">
+          <span class="ar-badge-dot"></span> Vista 3D
+        </button>
+        <button class="view-toggle-btn" id="btn-view-photo" onclick="setViewMode('photo')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Foto
+        </button>
+      </div>
+
+      <button class="cota-toggle" onclick="toggleCotas(this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4v16"/><path d="M3 4v16"/><path d="M21 12H3"/><path d="M18 9l3 3-3 3"/><path d="M6 9l-3 3 3 3"/></svg>
+        Medidas
+      </button>
+
+      <button class="share-btn" onclick="shareProduct()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Compartir
+      </button>
+
+      <model-viewer
+        id="main-viewer"
+        src=""
+        ar
+        ar-modes="webxr quick-look"
+        camera-controls
+        auto-rotate
+        shadow-intensity="1.5"
+        environment-image="neutral"
+        exposure="1.1">
+
+        <div id="model-error" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;gap:8px;font-size:13px;color:#e53e3e;padding:20px;text-align:center;margin:auto;max-height:120px;max-width:80%;">
+          <span style="font-size:24px">⚠️</span>
+          <span id="model-error-msg">Error cargando modelo</span>
+        </div>
+        <div slot="progress-bar" id="model-progress">
+          <div id="progress-fill"></div>
+        </div>
+      </model-viewer>
+      <canvas id="bbox-canvas"></canvas>
+
+      <div class="photo-view-container" id="photo-view-container">
+        <img class="photo-view-img" id="photo-view-img" src="" alt="Foto Real">
+      </div>
+    </div>
+
+    <div class="product-sheet">
+      <div class="sheet-handle"></div>
+
+      <div class="product-sheet-header-pinned">
+        <div class="product-header">
+          <h1 class="product-title" id="prod-title">Cargando...</h1>
+          <span class="product-brand" id="prod-brand">MMC</span>
+        </div>
+        <button class="btn-ar" onclick="document.getElementById('main-viewer').activateAR()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          Ver en tu espacio
+        </button>
+      </div>
+
+      <div class="product-scrollable">
+        <p class="product-desc" id="prod-desc">...</p>
+
+        <div class="dimensions-grid">
+          <div class="dim-item"><div class="dim-label">Ancho</div><div class="dim-val" id="dim-w">-</div></div>
+          <div class="dim-item"><div class="dim-label">Alto</div><div class="dim-val" id="dim-h">-</div></div>
+          <div class="dim-item"><div class="dim-label">Fondo</div><div class="dim-val" id="dim-d">-</div></div>
+        </div>
+
+        <div id="specs-wrapper" style="margin-bottom:18px;display:none;">
+          <button class="specs-toggle-btn" onclick="toggleSpecs()">
+            <span>Ficha Técnica</span>
+            <svg id="specs-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="specs-list" id="prod-specs" style="display:none;"></div>
+        </div>
+
+        <div class="download-section">
+          <div class="carousel-title">Recursos CAD</div>
+          <div class="download-grid">
+            <a href="#" class="download-btn" id="btn-dwg" download>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>.DWG</span>
+            </a>
+            <a href="#" class="download-btn" id="btn-skp" download>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>.SKP</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="carousel-title">Más modelos</div>
+        <div class="thumbnail-carousel" id="thumbs"></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-function toggleCotas(modelId, btn){
-  const mv = document.getElementById(modelId);
-  mv.classList.toggle('show-cotas');
-  btn.classList.toggle('active');
-  if(mv.classList.contains('show-cotas')){
-    btn.innerHTML = '✓ Cotas activas';
-  } else {
-    btn.innerHTML = '📏 Ver cotas';
+  const thumbSVGs = {
+    'paso-gato': `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="4"/><path d="M2 12h20"/><path d="M7 7V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/><path d="M7 17v3a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-3"/></svg>`,
+    'silla':      `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v9h12V2"/><path d="M6 11v10"/><path d="M18 11v10"/><path d="M6 17h12"/><path d="M9 2h6"/></svg>`,
+    'banca':      `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="4" rx="1"/><path d="M5 15v5"/><path d="M19 15v5"/><path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/></svg>`,
+    'raca':       `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>`,
+    'astronauta': `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M8 14h8a4 4 0 0 1 4 4v2H4v-2a4 4 0 0 1 4-4z"/></svg>`
+  };
+
+  const catalog = [
+    {
+      id: 'paso-gato', title: 'Paso Gato Industrial', brand: 'QR001 · Activo', category: 'estructuras',
+      desc: 'Estructura de herrería con barandales de seguridad para tránsito industrial seguro en alturas.',
+      src: './paso-gato-opt.glb',
+      srcCotas: './paso-gato-fixed.glb',
+      iosSrc: './paso-gato.usdz',
+      dims: { w:'3.00', h:'1.20', d:'1.10 m' },
+      image: './paso-gato.jpg', dwg: './cad/paso-gato.dwg', skp: './cad/paso-gato.skp',
+      specs: { estructura:'Acero estructural A-36', piso:'Tablones de madera tratada contra humedad', acabado:'Pintura electrostática anticorrosiva gris', barandal:'Tubo de acero cédula 30 con doble pasamanos' }
+    },
+    {
+      id: 'silla', title: 'Silla Industrial', brand: 'QR002 · Activo', category: 'mobiliario',
+      desc: 'Silla de herrería de alta resistencia con asiento de madera y diseño ergonómico.',
+      src: './silla.glb',
+      srcCotas: './silla.glb',
+      iosSrc: './silla.usdz',
+      dims: { w:'0.60', h:'1.25', d:'0.50 m' },
+      image: './silla.png', dwg: './cad/silla.dwg', skp: './cad/silla.skp',
+      specs: { estructura:'Herrería tubular reforzada de 1 pulgada', asiento:'Madera de roble natural de 1.5 pulgadas', acabado:'Pintura de poliuretano industrial mate', ergonomía:'Respaldo con inclinación de confort lumbar' }
+    },
+    {
+      id: 'banca', title: 'Banca Industrial', brand: 'QR003 · Activo', category: 'mobiliario',
+      desc: 'Banca de herrería resistente con tablones de madera premium para áreas de descanso y vestidores.',
+      src: './banca.glb',
+      srcCotas: './banca.glb',
+      iosSrc: './banca.usdz',
+      dims: { w:'1.20', h:'0.45', d:'0.40 m' },
+      image: './banca.png', dwg: './cad/banca.dwg', skp: './cad/banca.skp',
+      specs: { estructura:'Perfil de acero de 2x2 pulgadas', asiento:'Tablones de pino estufado de primera calidad', acabado:'Barniz marino y esmalte anticorrosivo gris', refuerzo:'Tirantes diagonales contra pandeo' }
+    },
+    {
+      id: 'raca', title: 'Rack Industrial', brand: 'QR004 · Activo', category: 'estructuras',
+      desc: 'Estructura metálica reforzada para almacenamiento industrial de cargas pesadas y tarimas.',
+      src: './raca-industrial.glb',
+      srcCotas: './raca-industrial.glb',
+      iosSrc: './raca-industrial.usdz',
+      dims: { w:'2.00', h:'1.80', d:'0.80 m' },
+      image: './raca.png', dwg: './cad/rack-industrial.dwg', skp: './cad/rack-industrial.skp',
+      specs: { estructura:'Postes y vigas de acero estructural pesado', niveles:'3 niveles ajustables de gran capacidad', acabado:'Pintura electrostática negra texturizada', soporte:'Tableros de pino reforzados para carga estibada' }
+    },
+    {
+      id: 'astronauta', title: 'Astronauta (Demo)', brand: 'QR005 · Demo', category: 'demos',
+      desc: 'Modelo de prueba para validación de iluminación PBR y animaciones en entorno WebXR.',
+      src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+      srcCotas: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+      dims: { w:'0.50', h:'1.80', d:'0.50 m' },
+      dwg: '#', skp: '#'
+    }
+  ];
+
+  const viewer         = document.getElementById('main-viewer');
+  const thumbsContainer= document.getElementById('thumbs');
+  const modelError     = document.getElementById('model-error');
+  const modelErrorMsg  = document.getElementById('model-error-msg');
+  const progressFill   = document.getElementById('progress-fill');
+  const catalogGrid    = document.getElementById('catalog-grid');
+
+  let bboxRafId = null;
+  let currentActiveId = null;
+  const BBOX_EDGES = [
+    [0,1],[1,5],[5,4],[4,0],
+    [2,3],[3,7],[7,6],[6,2],
+    [0,2],[1,3],[4,6],[5,7],
+  ];
+
+  function startBBoxCanvas() {
+    if (bboxRafId) cancelAnimationFrame(bboxRafId);
+    const canvas = document.getElementById('bbox-canvas');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      const vr = viewer.getBoundingClientRect();
+      if (canvas.width !== Math.floor(vr.width) || canvas.height !== Math.floor(vr.height)) {
+        canvas.width  = Math.floor(vr.width);
+        canvas.height = Math.floor(vr.height);
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (viewer.classList.contains('show-cotas')) {
+        const pts = [];
+        for (let i = 0; i < 8; i++) {
+          const el = viewer.querySelector(`[slot="corner-${i}"]`);
+          if (!el) { pts.push(null); continue; }
+          const r  = el.getBoundingClientRect();
+          const cx = (r.left + r.right)  / 2 - vr.left;
+          const cy = (r.top  + r.bottom) / 2 - vr.top;
+          const op = parseFloat(getComputedStyle(el).opacity);
+          pts.push({ x: cx, y: cy, vis: op > 0.5 });
+        }
+        BBOX_EDGES.forEach(([a, b]) => {
+          const pa = pts[a], pb = pts[b];
+          if (!pa || !pb) return;
+          const bright = pa.vis && pb.vis;
+          ctx.beginPath();
+          ctx.strokeStyle = bright ? 'rgba(255,255,255,0.72)' : 'rgba(255,255,255,0.18)';
+          ctx.lineWidth   = bright ? 1.5 : 1;
+          if (!bright) ctx.setLineDash([3, 6]); else ctx.setLineDash([]);
+          ctx.moveTo(pa.x, pa.y);
+          ctx.lineTo(pb.x, pb.y);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+      }
+      bboxRafId = requestAnimationFrame(draw);
+    }
+    bboxRafId = requestAnimationFrame(draw);
   }
-}
+
+  function buildHotspots(item) {
+    viewer.querySelectorAll('[slot^="hotspot-"],[slot^="corner-"]').forEach(el => el.remove());
+    if (bboxRafId) { cancelAnimationFrame(bboxRafId); bboxRafId = null; }
+
+    function placeHotspots(d, c) {
+      viewer.querySelectorAll('[slot^="hotspot-"],[slot^="corner-"]').forEach(el => el.remove());
+      const fmt = v => v >= 1 ? v.toFixed(2) + ' m' : Math.round(v * 100) + ' cm';
+      const labels = [
+        { pos:`${c.x+d.x*0.52} ${c.y} ${c.z}`,          norm:'1 0 0', icon:'↔', label:'Ancho', val:fmt(d.x) },
+        { pos:`${c.x} ${c.y+d.y*0.52} ${c.z}`,           norm:'0 1 0', icon:'↕', label:'Alto',  val:fmt(d.y) },
+        { pos:`${c.x} ${c.y-d.y*0.25} ${c.z+d.z*0.52}`,  norm:'0 0 1', icon:'⤢', label:'Fondo', val:fmt(d.z) },
+      ];
+      labels.forEach((hs, idx) => {
+        const div = document.createElement('div');
+        div.slot = `hotspot-${idx}`;
+        div.className = 'hotspot';
+        div.dataset.position = hs.pos;
+        div.dataset.normal   = hs.norm;
+        div.innerHTML = `<span class="hotspot-icon">${hs.icon}</span><span class="hotspot-label">${hs.label}</span><span class="hotspot-val">${hs.val}</span>`;
+        viewer.appendChild(div);
+      });
+      const hx = d.x/2, hy = d.y/2, hz = d.z/2;
+      const corners = [
+        [c.x-hx, c.y-hy, c.z-hz], [c.x+hx, c.y-hy, c.z-hz],
+        [c.x-hx, c.y+hy, c.z-hz], [c.x+hx, c.y+hy, c.z-hz],
+        [c.x-hx, c.y-hy, c.z+hz], [c.x+hx, c.y-hy, c.z+hz],
+        [c.x-hx, c.y+hy, c.z+hz], [c.x+hx, c.y+hy, c.z+hz],
+      ];
+      const cnorms = [
+        '-0.577 -0.577 -0.577','0.577 -0.577 -0.577',
+        '-0.577 0.577 -0.577', '0.577 0.577 -0.577',
+        '-0.577 -0.577 0.577', '0.577 -0.577 0.577',
+        '-0.577 0.577 0.577',  '0.577 0.577 0.577',
+      ];
+      corners.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.slot = `corner-${i}`;
+        div.className = 'corner-dot';
+        div.dataset.position = p.join(' ');
+        div.dataset.normal   = cnorms[i];
+        viewer.appendChild(div);
+      });
+      startBBoxCanvas();
+    }
+
+    function tryGenerate(retries) {
+      const d = viewer.getDimensions();
+      const c = viewer.getBoundingBoxCenter();
+      if (d && d.x > 0 && c) {
+        placeHotspots(d, c);
+      } else if (retries > 0) {
+        setTimeout(() => tryGenerate(retries - 1), 200);
+      } else if (item.dims) {
+        const p = s => parseFloat(s) || 1;
+        const dx = p(item.dims.w), dy = p(item.dims.h), dz = p(item.dims.d);
+        placeHotspots({ x:dx, y:dy, z:dz }, { x:0, y:dy/2, z:0 });
+      }
+    }
+
+    if (viewer.loaded) {
+      tryGenerate(6);
+    } else {
+      viewer.addEventListener('load', () => tryGenerate(6), { once: true });
+    }
+  }
+
+  viewer.addEventListener('ar-status', (e) => {
+    const btn = document.querySelector('.cota-toggle');
+    if (e.detail.status === 'session-started') {
+      viewer.classList.add('show-cotas');
+      if (btn) btn.classList.add('active');
+    } else if (e.detail.status === 'not-presenting') {
+      viewer.classList.remove('show-cotas');
+      if (btn) btn.classList.remove('active');
+    }
+  });
+
+  viewer.addEventListener('error', (e) => {
+    modelErrorMsg.textContent = 'Error: ' + (e.detail?.type || 'fallo') + ' — ' + (viewer.src || '');
+    modelError.style.display = 'flex';
+  });
+
+  viewer.addEventListener('load', () => {
+    modelError.style.display = 'none';
+    progressFill.style.width = '0%';
+    const d = viewer.getDimensions();
+    if (d) {
+      document.getElementById('dim-w').textContent = d.x.toFixed(2) + 'm';
+      document.getElementById('dim-h').textContent = d.y.toFixed(2) + 'm';
+      document.getElementById('dim-d').textContent = d.z.toFixed(2) + 'm';
+    }
+  });
+
+  viewer.addEventListener('progress', (e) => {
+    progressFill.style.width = (e.detail.totalProgress * 100) + '%';
+  });
+
+  function setViewMode(mode) {
+    const photoContainer = document.getElementById('photo-view-container');
+    const btn3d   = document.getElementById('btn-view-3d');
+    const btnPhoto= document.getElementById('btn-view-photo');
+    const cotaBtn = document.querySelector('.cota-toggle');
+    if (mode === '3d') {
+      btn3d.classList.add('active'); btnPhoto.classList.remove('active');
+      viewer.style.opacity = '1'; viewer.style.pointerEvents = 'auto';
+      photoContainer.style.display = 'none';
+      if (cotaBtn) cotaBtn.style.display = 'flex';
+    } else {
+      btn3d.classList.remove('active'); btnPhoto.classList.add('active');
+      viewer.style.opacity = '0'; viewer.style.pointerEvents = 'none';
+      photoContainer.style.display = 'flex';
+      if (cotaBtn) cotaBtn.style.display = 'none';
+      const activeThumb = document.querySelector('.thumb-item.active');
+      if (activeThumb) {
+        const item = catalog.find(c => c.id === activeThumb.dataset.id);
+        if (item?.image) document.getElementById('photo-view-img').src = item.image;
+      }
+    }
+  }
+
+  function toggleSpecs() {
+    const specsList = document.getElementById('prod-specs');
+    const btn = document.querySelector('.specs-toggle-btn');
+    const hidden = specsList.style.display === 'none';
+    specsList.style.display = hidden ? 'flex' : 'none';
+    btn.classList.toggle('active', hidden);
+  }
+
+  function updateIosSrcAttribute(item, showCotas) {
+    const baseIosSrc = (showCotas && item.iosSrcCotas) ? item.iosSrcCotas : item.iosSrc;
+    
+    if (!baseIosSrc) {
+      // Si no existe un archivo USDZ definido físicamente en el catálogo,
+      // removemos ios-src para que model-viewer autogenere el USDZ en el iPhone.
+      viewer.removeAttribute('ios-src');
+      return;
+    }
+    
+    // Serializar metadatos para el banner de iOS
+    const params = new URLSearchParams();
+    params.set('title', item.title);
+    params.set('brand', item.brand);
+    params.set('desc', item.desc);
+    if (item.dims) {
+      params.set('dimW', item.dims.w);
+      params.set('dimH', item.dims.h);
+      params.set('dimD', item.dims.d);
+    }
+    if (item.dwg) params.set('dwg', item.dwg);
+    if (item.skp) params.set('skp', item.skp);
+
+    if (item.specs) {
+      Object.entries(item.specs).forEach(([k, v]) => {
+        params.set(k, v);
+      });
+    }
+
+    const bannerBase = 'https://yoram04.github.io/mobilario-ar-qr-view/ar-banner.html';
+    const bannerParams = new URLSearchParams();
+    bannerParams.set('title', item.title);
+    bannerParams.set('brand', item.brand);
+    bannerParams.set('desc', item.desc);
+    if (item.dims) {
+      bannerParams.set('dimW', item.dims.w);
+      bannerParams.set('dimH', item.dims.h);
+      bannerParams.set('dimD', item.dims.d);
+    }
+    if (item.dwg) bannerParams.set('dwg', item.dwg);
+    if (item.skp) bannerParams.set('skp', item.skp);
+    if (item.specs) Object.entries(item.specs).forEach(([k, v]) => bannerParams.set(k, v));
+
+    const bannerUrl = `${bannerBase}?${bannerParams.toString()}`;
+    const finalIosSrc = `${baseIosSrc}#custom=${encodeURIComponent(bannerUrl)}&customHeight=400`;
+    viewer.setAttribute('ios-src', finalIosSrc);
+  }
+
+  function loadModel(id) {
+    currentActiveId = id;
+    setViewMode('3d');
+    const item = catalog.find(c => c.id === id);
+    if (!item) return;
+
+    modelError.style.display = 'none';
+    progressFill.style.width = '0%';
+    document.getElementById('prod-title').textContent = item.title;
+    document.getElementById('prod-brand').textContent = item.brand;
+    document.getElementById('prod-desc').textContent  = item.desc;
+    document.getElementById('dim-w').textContent = item.dims.w;
+    document.getElementById('dim-h').textContent = item.dims.h;
+    document.getElementById('dim-d').textContent = item.dims.d;
+
+    viewer.querySelectorAll('[slot^="hotspot-"]').forEach(el => el.remove());
+
+    const dwgBtn = document.getElementById('btn-dwg');
+    const skpBtn = document.getElementById('btn-skp');
+    if (item.dwg && item.dwg !== '#') { dwgBtn.href = item.dwg; dwgBtn.style.pointerEvents='auto'; dwgBtn.style.opacity='1'; }
+    else { dwgBtn.removeAttribute('href'); dwgBtn.style.pointerEvents='none'; dwgBtn.style.opacity='0.45'; }
+    if (item.skp && item.skp !== '#') { skpBtn.href = item.skp; skpBtn.style.pointerEvents='auto'; skpBtn.style.opacity='1'; }
+    else { skpBtn.removeAttribute('href'); skpBtn.style.pointerEvents='none'; skpBtn.style.opacity='0.45'; }
+
+    if (item.image) {
+      viewer.setAttribute('poster', item.image);
+      document.getElementById('btn-view-photo').style.display = 'flex';
+    } else {
+      viewer.removeAttribute('poster');
+      document.getElementById('btn-view-photo').style.display = 'none';
+    }
+
+    const specsWrapper   = document.getElementById('specs-wrapper');
+    const specsContainer = document.getElementById('prod-specs');
+    const toggleBtn      = document.querySelector('.specs-toggle-btn');
+    specsContainer.innerHTML = '';
+    specsContainer.style.display = 'none';
+    if (toggleBtn) toggleBtn.classList.remove('active');
+
+    if (item.specs) {
+      specsWrapper.style.display = 'block';
+      Object.entries(item.specs).forEach(([key, val]) => {
+        const row = document.createElement('div');
+        row.className = 'spec-row';
+        row.innerHTML = `<span class="spec-key">${key.charAt(0).toUpperCase()+key.slice(1)}</span><span class="spec-val">${val}</span>`;
+        specsContainer.appendChild(row);
+      });
+    } else {
+      specsWrapper.style.display = 'none';
+    }
+
+    buildHotspots(item);
+    const showCotas = viewer.classList.contains('show-cotas');
+    viewer.src = (showCotas && item.srcCotas) ? item.srcCotas : item.src;
+    updateIosSrcAttribute(item, showCotas);
+    document.querySelectorAll('.thumb-item').forEach(el => el.classList.toggle('active', el.dataset.id === id));
+  }
+
+  function toggleCotas(btn) {
+    const active = btn.classList.toggle('active');
+    viewer.classList.toggle('show-cotas', active);
+    
+    if (currentActiveId) {
+      const item = catalog.find(x => x.id === currentActiveId);
+      if (item) {
+        viewer.src = (active && item.srcCotas) ? item.srcCotas : item.src;
+        updateIosSrcAttribute(item, active);
+      }
+    }
+  }
+
+  function openViewer(id) {
+    const run = () => {
+      loadModel(id);
+      document.getElementById('catalog-screen').classList.remove('active');
+      document.getElementById('viewer-screen').classList.add('active');
+    };
+    if (document.startViewTransition) document.startViewTransition(run);
+    else run();
+  }
+
+  function showCatalog() {
+    if (bboxRafId) { cancelAnimationFrame(bboxRafId); bboxRafId = null; }
+    const run = () => {
+      document.getElementById('viewer-screen').classList.remove('active');
+      document.getElementById('catalog-screen').classList.add('active');
+    };
+    if (document.startViewTransition) document.startViewTransition(run);
+    else run();
+  }
+
+  let currentSearchQuery = '';
+
+  function handleSearch(query) {
+    currentSearchQuery = query.toLowerCase().trim();
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const filtered = catalog.filter(item => {
+      return item.title.toLowerCase().includes(currentSearchQuery) || 
+             item.desc.toLowerCase().includes(currentSearchQuery);
+    });
+    renderCatalogGrid(filtered);
+  }
+
+  function renderCatalogGrid(items) {
+    catalogGrid.innerHTML = '';
+    items.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = 'catalog-card';
+      card.style.setProperty('--delay', index);
+      card.onclick = () => openViewer(item.id);
+
+      const imageHtml = item.image
+        ? `<img src="${item.image}" alt="${item.title}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        : '';
+      const svgHtml = thumbSVGs[item.id] || thumbSVGs['astronauta'];
+
+      card.innerHTML = `
+        <div class="catalog-card-image">
+          ${imageHtml}
+          <div style="display:${item.image ? 'none' : 'flex'};align-items:center;justify-content:center;width:100%;height:100%">${svgHtml}</div>
+          <div class="catalog-card-badge">${item.brand.split('·')[1].trim()}</div>
+        </div>
+        <div class="catalog-card-info">
+          <h3 class="catalog-card-title">${item.title}</h3>
+          <p class="catalog-card-desc">${item.desc}</p>
+        </div>
+        <div class="catalog-card-footer">
+          <span class="catalog-card-dims">${item.dims.w.replace('m','')} × ${item.dims.h.replace('m','')} × ${item.dims.d.replace('m','')} m</span>
+          <button class="catalog-card-btn">
+            Ver en 3D
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      `;
+      catalogGrid.appendChild(card);
+    });
+  }
+
+  function shareProduct() {
+    if (!currentActiveId) return;
+    const item = catalog.find(x => x.id === currentActiveId);
+    if (!item) return;
+
+    if (navigator.share) {
+      navigator.share({
+        title: item.title,
+        text: `Mira este modelo 3D en Realidad Aumentada: ${item.title} (${item.brand})`,
+        url: window.location.origin + '?id=' + item.id
+      }).catch(err => console.log('Error compartiendo:', err));
+    } else {
+      const tempUrl = window.location.origin + '?id=' + item.id;
+      navigator.clipboard.writeText(tempUrl).then(() => {
+        showToast('Enlace copiado al portapapeles');
+      });
+    }
+  }
+
+  function showToast(message) {
+    let toast = document.getElementById('app-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'app-toast';
+      toast.style.cssText = `
+        position: fixed;
+        top: calc(env(safe-area-inset-top,20px) + 12px);
+        left: 50%;
+        transform: translate(-50%, -32px);
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid rgba(255, 140, 60, 0.3);
+        box-shadow: 0 8px 30px rgba(255, 140, 60, 0.12);
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text);
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+      `;
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    setTimeout(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translate(-50%, 0)';
+    }, 50);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translate(-50%, -32px)';
+    }, 2500);
+  }
+
+  // Render initial catalog grid
+  renderCatalogGrid(catalog);
+
+  // Build thumbnails (constant)
+  catalog.forEach(item => {
+    const svgHtml = thumbSVGs[item.id] || thumbSVGs['astronauta'];
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb-item';
+    thumb.dataset.id = item.id;
+    const thumbHtml = item.image
+      ? `<img src="${item.image}" alt="${item.title}">`
+      : svgHtml;
+    thumb.innerHTML = thumbHtml;
+    thumb.title = item.title;
+    thumb.onclick = () => loadModel(item.id);
+    thumbsContainer.appendChild(thumb);
+  });
 </script>
-
-</body>
-</html>
-
-.header{
-  background:rgba(255,255,255,.8);
-  backdrop-filter:blur(30px) saturate(180%);
-  -webkit-backdrop-filter:blur(30px) saturate(180%);
-  border-bottom:1px solid rgba(0,0,0,.06);
-  padding:32px 24px;
-  text-align:center;
-  position:sticky;
-  top:0;
-  z-index:100;
-}
-
-.logo{
-  width:120px;
-  margin:0 auto 16px;
-  display:block;
-  filter:drop-shadow(0 8px 24px rgba(255,140,60,.3));
-  animation:pulse 3s infinite;
-}
-
-@keyframes pulse{
-  0%,100%{filter:drop-shadow(0 8px 24px rgba(255,140,60,.3))}
-  50%{filter:drop-shadow(0 8px 32px rgba(255,140,60,.5))}
-}
-
-h1{
-  font-size:36px;
-  font-weight:800;
-  letter-spacing:-1.5px;
-  color:#1d1d1f;
-  margin-bottom:6px;
-}
-
-.sub{
-  font-size:13px;
-  color:#86868b;
-  letter-spacing:2px;
-  text-transform:uppercase;
-  font-weight:500;
-}
-
-.content{
-  padding:40px 20px;
-  max-width:1000px;
-  margin:0 auto;
-  position:relative;
-  z-index:1;
-}
-
-h2{
-  font-size:32px;
-  font-weight:800;
-  margin-bottom:32px;
-  color:#1d1d1f;
-  letter-spacing:-1px;
-}
-
-.card{
-  background:rgba(255,255,255,.7);
-  backdrop-filter:blur(30px) saturate(180%);
-  -webkit-backdrop-filter:blur(30px) saturate(180%);
-  border:1px solid rgba(255,255,255,.8);
-  border-radius:24px;
-  padding:28px;
-  margin-bottom:24px;
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
-    0 8px 32px rgba(0,0,0,.06),
-    inset 0 1px 0 rgba(255,255,255,.9);
-  transition:all .4s cubic-bezier(.16,1,.3,1);
-  position:relative;
-  overflow:hidden;
-}
-
-.card::before{
-  content:'';
-  position:absolute;
-  top:0;left:-100%;
-  width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,140,60,.08),transparent);
-  transition:left .8s;
-  pointer-events:none;
-}
-
-.card:hover::before{left:100%}
-
-.card:hover{
-  transform:translateY(-4px);
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
-    0 20px 60px rgba(0,0,0,.1),
-    inset 0 1px 0 rgba(255,255,255,.9);
-  border-color:rgba(255,140,60,.3);
-}
-
-.card h3{
-  font-size:24px;
-  font-weight:700;
-  margin-bottom:6px;
-  color:#1d1d1f;
-  letter-spacing:-.5px;
-}
-
-.card p{
-  font-size:14px;
-  color:#86868b;
-  margin-bottom:20px;
-}
-
-.viewer-container{
-  width:100%;
-  height:420px;
-  border-radius:18px;
-  overflow:hidden;
-  margin-bottom:20px;
-  background:#f5f5f7;
-  border:1px solid rgba(0,0,0,.06);
-  box-shadow:inset 0 2px 8px rgba(0,0,0,.04);
-}
-
-model-viewer{
-  width:100%;
-  height:100%;
-  background:linear-gradient(135deg,#f5f5f7 0%,#fafafa 100%);
-  --poster-color:transparent;
-}
-
-.dims{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-bottom:20px;
-}
-
-.dim{
-  background:rgba(255,255,255,.6);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.9);
-  padding:16px 12px;
-  border-radius:14px;
-  text-align:center;
-  transition:all .3s;
-  box-shadow:0 1px 2px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.8);
-}
-
-.dim:hover{
-  background:rgba(255,140,60,.08);
-  border-color:rgba(255,140,60,.3);
-  transform:translateY(-2px);
-}
-
-.dim label{
-  font-size:10px;
-  color:#86868b;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  display:block;
-  margin-bottom:6px;
-}
-
-.dim span{
-  font-size:24px;
-  font-weight:800;
-  color:#ff8c3c;
-  letter-spacing:-.5px;
-}
-
-.ar-btn{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  width:100%;
-  padding:18px;
-  background:rgba(255,255,255,.6);
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
-  color:#ff8c3c;
-  border:1px solid rgba(255,140,60,.25);
-  border-radius:14px;
-  font-size:15px;
-  font-weight:700;
-  cursor:pointer;
-  letter-spacing:.3px;
-  transition:all .3s cubic-bezier(.16,1,.3,1);
-  position:relative;
-  overflow:hidden;
-  text-transform:uppercase;
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
-    inset 0 1px 0 rgba(255,255,255,.8);
-}
-
-.ar-btn::before{
-  content:'';
-  position:absolute;
-  top:0;left:0;right:0;bottom:0;
-  background:linear-gradient(135deg,rgba(255,140,60,.15) 0%,rgba(255,165,80,.15) 100%);
-  opacity:0;
-  transition:opacity .3s;
-}
-
-.ar-btn:hover{
-  transform:translateY(-2px);
-  border-color:rgba(255,140,60,.5);
-  color:#ff7a1f;
-  box-shadow:
-    0 8px 24px rgba(255,140,60,.2),
-    inset 0 1px 0 rgba(255,255,255,.8);
-}
-
-.ar-btn:hover::before{opacity:1}
-
-.ar-btn:active{transform:translateY(0)}
-
-.ar-btn span{position:relative;z-index:1;display:flex;align-items:center;gap:8px}
-
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:11px;
-  background:rgba(255,140,60,.1);
-  backdrop-filter:blur(10px);
-  padding:6px 14px;
-  border-radius:20px;
-  color:#ff7a1f;
-  font-weight:700;
-  margin-bottom:12px;
-  letter-spacing:1px;
-  border:1px solid rgba(255,140,60,.2);
-  text-transform:uppercase;
-}
-
-.badge::before{
-  content:'';
-  width:6px;height:6px;
-  border-radius:50%;
-  background:#ff8c3c;
-  box-shadow:0 0 8px rgba(255,140,60,.6);
-  animation:blink 2s infinite;
-}
-
-@keyframes blink{
-  0%,100%{opacity:1}
-  50%{opacity:.4}
-}
-
-@media (max-width:600px){
-  .viewer-container{height:350px}
-  h1{font-size:30px}
-  h2{font-size:26px}
-  .dim span{font-size:20px}
-  .card{padding:22px}
-  .logo{width:100px}
-}
-
-.card{animation:fadeUp .6s ease-out backwards}
-.card:nth-child(2){animation-delay:.1s}
-.card:nth-child(3){animation-delay:.2s}
-.card:nth-child(4){animation-delay:.3s}
-
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-</style>
-</head>
-<body>
-
-<div class="header">
-<img src="./logo-mmc.png" alt="MMC" class="logo">
-<h1>MOBILARIO AR</h1>
-<p class="sub">QR View · by MMC</p>
-</div>
-
-<div class="content">
-<h2>Catálogo</h2>
-
-<div class="card">
-<div class="badge">QR001 · Activo</div>
-<h3>Paso Gato</h3>
-<p>Estructura de herrería con barandales de seguridad</p>
-<div class="viewer-container">
-<model-viewer id="m1" src="./paso-gato.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1"></model-viewer>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>3.0m</span></div>
-<div class="dim"><label>Alto</label><span>1.2m</span></div>
-<div class="dim"><label>Fondo</label><span>1.1m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m1').activateAR()">
-<span>📱 Ver en tu espacio</span>
-</button>
-</div>
-
-<div class="card">
-<div class="badge">QR002 · Activo</div>
-<h3>Silla</h3>
-<p>Silla de herrería con asiento de madera</p>
-<div class="viewer-container">
-<model-viewer id="m2" src="./silla.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1"></model-viewer>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>0.60m</span></div>
-<div class="dim"><label>Alto</label><span>1.25m</span></div>
-<div class="dim"><label>Fondo</label><span>0.50m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m2').activateAR()">
-<span>📱 Ver en tu espacio</span>
-</button>
-</div>
-
-<div class="card">
-<div class="badge">QR003 · Demo</div>
-<h3>Astronauta</h3>
-<p>Modelo de prueba optimizado</p>
-<div class="viewer-container">
-<model-viewer id="m3" src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1"></model-viewer>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>0.5m</span></div>
-<div class="dim"><label>Alto</label><span>1.8m</span></div>
-<div class="dim"><label>Fondo</label><span>0.5m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m3').activateAR()">
-<span>📱 Ver en tu espacio</span>
-</button>
-</div>
-
-</div>
-
-</body>
-</html>
-
-.header{
-  background:rgba(255,255,255,.8);
-  backdrop-filter:blur(30px) saturate(180%);
-  -webkit-backdrop-filter:blur(30px) saturate(180%);
-  border-bottom:1px solid rgba(0,0,0,.06);
-  padding:32px 24px;
-  text-align:center;
-  position:sticky;
-  top:0;
-  z-index:100;
-  box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
-}
-
-.logo{
-  width:64px;height:64px;
-  margin:0 auto 16px;
-  background:linear-gradient(135deg,#00d4ff 0%,#0099cc 50%,#0066aa 100%);
-  border-radius:20px;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:24px;
-  color:#fff;letter-spacing:1px;
-  box-shadow:0 12px 32px rgba(0,153,204,.3),inset 0 1px 2px rgba(255,255,255,.4);
-  animation:pulse 3s infinite;
-}
-
-@keyframes pulse{
-  0%,100%{box-shadow:0 12px 32px rgba(0,153,204,.3),inset 0 1px 2px rgba(255,255,255,.4)}
-  50%{box-shadow:0 12px 48px rgba(0,153,204,.5),inset 0 1px 2px rgba(255,255,255,.4)}
-}
-
-h1{
-  font-size:36px;
-  font-weight:800;
-  letter-spacing:-1.5px;
-  color:#1d1d1f;
-  margin-bottom:6px;
-}
-
-.sub{
-  font-size:13px;
-  color:#86868b;
-  letter-spacing:2px;
-  text-transform:uppercase;
-  font-weight:500;
-}
-
-.content{
-  padding:40px 20px;
-  max-width:1000px;
-  margin:0 auto;
-  position:relative;
-  z-index:1;
-}
-
-h2{
-  font-size:32px;
-  font-weight:800;
-  margin-bottom:32px;
-  color:#1d1d1f;
-  letter-spacing:-1px;
-}
-
-.card{
-  background:rgba(255,255,255,.7);
-  backdrop-filter:blur(30px) saturate(180%);
-  -webkit-backdrop-filter:blur(30px) saturate(180%);
-  border:1px solid rgba(255,255,255,.8);
-  border-radius:24px;
-  padding:28px;
-  margin-bottom:24px;
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
-    0 8px 32px rgba(0,0,0,.06),
-    inset 0 1px 0 rgba(255,255,255,.9);
-  transition:all .4s cubic-bezier(.16,1,.3,1);
-  position:relative;
-  overflow:hidden;
-}
-
-.card::before{
-  content:'';
-  position:absolute;
-  top:0;left:-100%;
-  width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(0,212,255,.08),transparent);
-  transition:left .8s;
-  pointer-events:none;
-}
-
-.card:hover::before{left:100%}
-
-.card:hover{
-  transform:translateY(-4px);
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
-    0 20px 60px rgba(0,0,0,.1),
-    inset 0 1px 0 rgba(255,255,255,.9);
-  border-color:rgba(0,212,255,.3);
-}
-
-.card h3{
-  font-size:24px;
-  font-weight:700;
-  margin-bottom:6px;
-  color:#1d1d1f;
-  letter-spacing:-.5px;
-}
-
-.card p{
-  font-size:14px;
-  color:#86868b;
-  margin-bottom:20px;
-}
-
-.viewer-container{
-  width:100%;
-  height:420px;
-  border-radius:18px;
-  overflow:hidden;
-  margin-bottom:20px;
-  background:#f5f5f7;
-  border:1px solid rgba(0,0,0,.06);
-  box-shadow:inset 0 2px 8px rgba(0,0,0,.04);
-}
-
-model-viewer{
-  width:100%;
-  height:100%;
-  background:linear-gradient(135deg,#f5f5f7 0%,#fafafa 100%);
-  --poster-color:transparent;
-}
-
-.dims{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-bottom:20px;
-}
-
-.dim{
-  background:rgba(255,255,255,.6);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.9);
-  padding:16px 12px;
-  border-radius:14px;
-  text-align:center;
-  transition:all .3s;
-  box-shadow:0 1px 2px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.8);
-}
-
-.dim:hover{
-  background:rgba(0,212,255,.08);
-  border-color:rgba(0,212,255,.3);
-  transform:translateY(-2px);
-}
-
-.dim label{
-  font-size:10px;
-  color:#86868b;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  display:block;
-  margin-bottom:6px;
-}
-
-.dim span{
-  font-size:24px;
-  font-weight:800;
-  color:#0066aa;
-  letter-spacing:-.5px;
-}
-
-.ar-btn{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  width:100%;
-  padding:18px;
-  background:rgba(255,255,255,.6);
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
-  color:#0066aa;
-  border:1px solid rgba(0,102,170,.2);
-  border-radius:14px;
-  font-size:15px;
-  font-weight:700;
-  cursor:pointer;
-  letter-spacing:.3px;
-  transition:all .3s cubic-bezier(.16,1,.3,1);
-  position:relative;
-  overflow:hidden;
-  text-transform:uppercase;
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
-    inset 0 1px 0 rgba(255,255,255,.8);
-}
-
-.ar-btn::before{
-  content:'';
-  position:absolute;
-  top:0;left:0;right:0;bottom:0;
-  background:linear-gradient(135deg,rgba(0,212,255,.15) 0%,rgba(0,102,170,.15) 100%);
-  opacity:0;
-  transition:opacity .3s;
-}
-
-.ar-btn:hover{
-  transform:translateY(-2px);
-  border-color:rgba(0,212,255,.5);
-  color:#0066aa;
-  box-shadow:
-    0 8px 24px rgba(0,153,204,.2),
-    inset 0 1px 0 rgba(255,255,255,.8);
-}
-
-.ar-btn:hover::before{opacity:1}
-
-.ar-btn:active{transform:translateY(0)}
-
-.ar-btn span{position:relative;z-index:1;display:flex;align-items:center;gap:8px}
-
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:11px;
-  background:rgba(0,212,255,.1);
-  backdrop-filter:blur(10px);
-  padding:6px 14px;
-  border-radius:20px;
-  color:#0066aa;
-  font-weight:700;
-  margin-bottom:12px;
-  letter-spacing:1px;
-  border:1px solid rgba(0,212,255,.2);
-  text-transform:uppercase;
-}
-
-.badge::before{
-  content:'';
-  width:6px;height:6px;
-  border-radius:50%;
-  background:#00d4ff;
-  box-shadow:0 0 8px rgba(0,212,255,.6);
-  animation:blink 2s infinite;
-}
-
-@keyframes blink{
-  0%,100%{opacity:1}
-  50%{opacity:.4}
-}
-
-@media (max-width:600px){
-  .viewer-container{height:350px}
-  h1{font-size:30px}
-  h2{font-size:26px}
-  .dim span{font-size:20px}
-  .card{padding:22px}
-}
-
-.card{animation:fadeUp .6s ease-out backwards}
-.card:nth-child(2){animation-delay:.1s}
-.card:nth-child(3){animation-delay:.2s}
-.card:nth-child(4){animation-delay:.3s}
-
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-</style>
-</head>
-<body>
-
-<div class="header">
-<div class="logo">MMC</div>
-<h1>MOBILARIO AR</h1>
-<p class="sub">QR View · by MMC</p>
-</div>
-
-<div class="content">
-<h2>Catálogo</h2>
-
-<div class="card">
-<div class="badge">QR001 · Activo</div>
-<h3>Paso Gato</h3>
-<p>Estructura de herrería con barandales de seguridad</p>
-<div class="viewer-container">
-<model-viewer id="m1" src="./paso-gato.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1"></model-viewer>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>3.0m</span></div>
-<div class="dim"><label>Alto</label><span>1.2m</span></div>
-<div class="dim"><label>Fondo</label><span>1.1m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m1').activateAR()">
-<span>📱 Ver en tu espacio</span>
-</button>
-</div>
-
-<div class="card">
-<div class="badge">QR002 · Activo</div>
-<h3>Silla</h3>
-<p>Silla de herrería con asiento de madera</p>
-<div class="viewer-container">
-<model-viewer id="m2" src="./silla.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1"></model-viewer>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>0.60m</span></div>
-<div class="dim"><label>Alto</label><span>1.25m</span></div>
-<div class="dim"><label>Fondo</label><span>0.50m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m2').activateAR()">
-<span>📱 Ver en tu espacio</span>
-</button>
-</div>
-
-<div class="card">
-<div class="badge">QR003 · Demo</div>
-<h3>Astronauta</h3>
-<p>Modelo de prueba optimizado</p>
-<div class="viewer-container">
-<model-viewer id="m3" src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1"></model-viewer>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>0.5m</span></div>
-<div class="dim"><label>Alto</label><span>1.8m</span></div>
-<div class="dim"><label>Fondo</label><span>0.5m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m3').activateAR()">
-<span>📱 Ver en tu espacio</span>
-</button>
-</div>
-
-</div>
-
-</body>
-</html>
-
-.logo{
-  width:64px;height:64px;
-  margin:0 auto 16px;
-  background:linear-gradient(135deg,#00d4ff 0%,#0099cc 50%,#0066aa 100%);
-  border-radius:18px;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:24px;
-  color:#fff;letter-spacing:1px;
-  box-shadow:0 12px 32px rgba(0,212,255,.4),inset 0 1px 2px rgba(255,255,255,.3);
-  position:relative;
-  animation:pulse 3s infinite;
-}
-
-@keyframes pulse{
-  0%,100%{box-shadow:0 12px 32px rgba(0,212,255,.4),inset 0 1px 2px rgba(255,255,255,.3)}
-  50%{box-shadow:0 12px 48px rgba(0,212,255,.7),inset 0 1px 2px rgba(255,255,255,.3)}
-}
-
-h1{
-  font-size:34px;
-  font-weight:800;
-  letter-spacing:-1px;
-  background:linear-gradient(135deg,#fff 0%,#00d4ff 100%);
-  -webkit-background-clip:text;
-  background-clip:text;
-  -webkit-text-fill-color:transparent;
-  margin-bottom:4px;
-}
-
-.sub{
-  font-size:13px;
-  color:rgba(255,255,255,.7);
-  letter-spacing:2px;
-  text-transform:uppercase;
-  font-weight:500;
-}
-
-.content{
-  padding:32px 20px;
-  max-width:1000px;
-  margin:0 auto;
-  position:relative;
-  z-index:1;
-}
-
-h2{
-  font-size:28px;
-  font-weight:700;
-  margin-bottom:28px;
-  color:#fff;
-  text-shadow:0 2px 8px rgba(0,0,0,.2);
-}
-
-.card{
-  background:rgba(255,255,255,.1);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:24px;
-  padding:24px;
-  margin-bottom:24px;
-  box-shadow:0 8px 32px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.1);
-  transition:all .4s cubic-bezier(.16,1,.3,1);
-  position:relative;
-  overflow:hidden;
-}
-
-.card::before{
-  content:'';
-  position:absolute;
-  top:0;left:-100%;
-  width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
-  transition:left .8s;
-}
-
-.card:hover::before{left:100%}
-
-.card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 16px 48px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.15);
-  border-color:rgba(0,212,255,.3);
-}
-
-.card h3{
-  font-size:22px;
-  font-weight:700;
-  margin-bottom:6px;
-  color:#fff;
-}
-
-.card p{
-  font-size:14px;
-  color:rgba(255,255,255,.7);
-  margin-bottom:18px;
-}
-
-.viewer-container{
-  width:100%;
-  height:420px;
-  border-radius:16px;
-  overflow:hidden;
-  margin-bottom:20px;
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.1);
-  box-shadow:inset 0 2px 8px rgba(0,0,0,.1);
-}
-
-model-viewer{
-  width:100%;
-  height:100%;
-  background:linear-gradient(135deg,#f0f4ff 0%,#ffffff 100%);
-}
-
-.dims{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-bottom:20px;
-}
-
-.dim{
-  background:rgba(255,255,255,.08);
-  backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.15);
-  padding:16px 12px;
-  border-radius:14px;
-  text-align:center;
-  transition:all .3s;
-}
-
-.dim:hover{
-  background:rgba(0,212,255,.15);
-  border-color:rgba(0,212,255,.3);
-  transform:translateY(-2px);
-}
-
-.dim label{
-  font-size:10px;
-  color:rgba(255,255,255,.6);
-  font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  display:block;
-  margin-bottom:6px;
-}
-
-.dim span{
-  font-size:22px;
-  font-weight:800;
-  background:linear-gradient(135deg,#00d4ff 0%,#fff 100%);
-  -webkit-background-clip:text;
-  background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-.ar-btn{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  width:100%;
-  padding:18px;
-  background:rgba(255,255,255,.12);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  color:#fff;
-  border:1px solid rgba(255,255,255,.25);
-  border-radius:14px;
-  font-size:16px;
-  font-weight:700;
-  cursor:pointer;
-  letter-spacing:.5px;
-  transition:all .3s cubic-bezier(.16,1,.3,1);
-  position:relative;
-  overflow:hidden;
-  text-transform:uppercase;
-}
-
-.ar-btn::before{
-  content:'';
-  position:absolute;
-  top:0;left:0;right:0;bottom:0;
-  background:linear-gradient(135deg,rgba(0,212,255,.3) 0%,rgba(102,126,234,.3) 100%);
-  opacity:0;
-  transition:opacity .3s;
-}
-
-.ar-btn:hover{
-  transform:translateY(-2px);
-  border-color:rgba(0,212,255,.5);
-  box-shadow:0 8px 24px rgba(0,212,255,.3);
-}
-
-.ar-btn:hover::before{opacity:1}
-
-.ar-btn:active{transform:translateY(0)}
-
-.ar-btn span{position:relative;z-index:1}
-
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:11px;
-  background:rgba(0,212,255,.2);
-  backdrop-filter:blur(10px);
-  padding:6px 14px;
-  border-radius:20px;
-  color:#00d4ff;
-  font-weight:700;
-  margin-bottom:12px;
-  letter-spacing:1px;
-  border:1px solid rgba(0,212,255,.3);
-  text-transform:uppercase;
-}
-
-.badge::before{
-  content:'';
-  width:6px;height:6px;
-  border-radius:50%;
-  background:#00d4ff;
-  box-shadow:0 0 8px #00d4ff;
-  animation:blink 2s infinite;
-}
-
-@keyframes blink{
-  0%,100%{opacity:1}
-  50%{opacity:.5}
-}
-
-/* Loading animation */
-model-viewer::part(default-progress-bar){
-  background:linear-gradient(90deg,#00d4ff,#0066aa)
-}
-
-/* Responsive */
-@media (max-width:600px){
-  .viewer-container{height:350px}
-  h1{font-size:28px}
-  .dim span{font-size:18px}
-  .card{padding:20px}
-}
-
-/* Animación entrada */
-.card{animation:fadeUp .6s ease-out backwards}
-.card:nth-child(2){animation-delay:.1s}
-.card:nth-child(3){animation-delay:.2s}
-.card:nth-child(4){animation-delay:.3s}
-
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-</style>
-</head>
-<body>
-
-<div class="header">
-<div class="logo">MMC</div>
-<h1>MOBILARIO AR</h1>
-<p class="sub">QR View · by MMC</p>
-</div>
-
-<div class="content">
-<h2>✨ Catálogo de Modelos</h2>
-
-<div class="card">
-<div class="badge">QR001 · Activo</div>
-<h3>Paso Gato</h3>
-<p>Estructura de herrería con barandales de seguridad</p>
-<div class="viewer-container">
-<model-viewer id="m1" src="./paso-gato.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1"></model-viewer>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>3.0m</span></div>
-<div class="dim"><label>Alto</label><span>1.2m</span></div>
-<div class="dim"><label>Fondo</label><span>1.1m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m1').activateAR()">
-<span>📱 Ver en tu espacio</span>
-</button>
-</div>
-
-<div class="card">
-<div class="badge">QR002 · Activo</div>
-<h3>Silla</h3>
-<p>Silla de herrería con asiento de madera</p>
-<div class="viewer-container">
-<model-viewer id="m2" src="./silla.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1"></model-viewer>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>0.60m</span></div>
-<div class="dim"><label>Alto</label><span>1.25m</span></div>
-<div class="dim"><label>Fondo</label><span>0.50m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m2').activateAR()">
-<span>📱 Ver en tu espacio</span>
-</button>
-</div>
-
-<div class="card">
-<div class="badge">QR003 · Demo</div>
-<h3>Astronauta</h3>
-<p>Modelo de prueba optimizado</p>
-<div class="viewer-container">
-<model-viewer id="m3" src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate shadow-intensity="1.5" environment-image="neutral" exposure="1.1"></model-viewer>
-</div>
-<div class="dims">
-<div class="dim"><label>Ancho</label><span>0.5m</span></div>
-<div class="dim"><label>Alto</label><span>1.8m</span></div>
-<div class="dim"><label>Fondo</label><span>0.5m</span></div>
-</div>
-<button class="ar-btn" onclick="document.getElementById('m3').activateAR()">
-<span>📱 Ver en tu espacio</span>
-</button>
-</div>
-
-</div>
-
 </body>
 </html>
