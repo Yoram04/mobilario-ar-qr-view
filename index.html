@@ -1224,6 +1224,9 @@
     if (item.dwg) bannerParams.set('dwg', item.dwg);
     if (item.skp) bannerParams.set('skp', item.skp);
     if (item.specs) Object.entries(item.specs).forEach(([k, v]) => bannerParams.set(k, v));
+    
+    // Evitar que Safari guarde el banner viejo en caché
+    bannerParams.set('v', Date.now());
 
     const bannerUrl = `${bannerBase}?${bannerParams.toString()}`;
     const finalIosSrc = `${baseIosSrc}#custom=${encodeURIComponent(bannerUrl)}&customHeight=large`;
