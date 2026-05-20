@@ -129,9 +129,24 @@
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 9px;
     height: 36px;
-    margin-left: -12px;
+    margin-left: -4px;
+  }
+  .catalog-topbar-logo-divider {
+    width: 2px;
+    height: 26px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .catalog-topbar-logo-name {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    line-height: 1.4;
   }
   .catalog-topbar-logo-glow {
     position: absolute;
@@ -804,6 +819,8 @@
         <div class="catalog-topbar-logo-wrapper">
           <div class="catalog-topbar-logo-glow"></div>
           <img src="./logo-mmc.png" alt="MMC" class="catalog-topbar-logo">
+          <div class="catalog-topbar-logo-divider"></div>
+          <div class="catalog-topbar-logo-name">Mantenimiento<br>Mayor<br>y Construcción</div>
         </div>
         <span class="catalog-topbar-label">Catálogo AR</span>
       </div>
